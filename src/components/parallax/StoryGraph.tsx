@@ -16,7 +16,7 @@ const styles: Record<GraphNodeKind, string> = {
 function StoryNodeView({ data }: NodeProps<Node<Data>>) {
   return (
     <div
-      className={`border transition-colors ${styles[data.kind]} ${data.selected ? "!border-primary outline outline-2 outline-offset-2 outline-primary" : ""} ${data.dim ? "opacity-35" : ""}`}
+      className={`border transition-colors ${styles[data.kind]} ${data.selected ? "!border-primary outline outline-2 outline-offset-2 outline-primary" : ""} ${data.dim ? "opacity-60" : ""}`}
     >
       <Handle type="target" position={Position.Left} className="!h-1 !w-1 !border-0 !bg-transparent" />
       <div className="flex items-center gap-2">
@@ -59,7 +59,7 @@ export function StoryGraph({
   }, [selectedId, g.edges]);
 
   const { nodes, edges } = useMemo(() => {
-    const cols: Record<GraphNodeKind, number> = { question: 0, theme: 340, video: 680, perspective: 1080 };
+    const cols: Record<GraphNodeKind, number> = { question: 0, theme: 280, video: 530, perspective: 830 };
     const byKind: Record<GraphNodeKind, typeof g.nodes> = { question: [], theme: [], video: [], perspective: [] };
     g.nodes.forEach((n) => byKind[n.kind].push(n));
     // order videos by their first theme for tidier edges
@@ -69,7 +69,7 @@ export function StoryGraph({
       const rb = records.find((r) => r.id === b.refId);
       return themeOrder.indexOf(ra?.themes[0] ?? "") - themeOrder.indexOf(rb?.themes[0] ?? "");
     });
-    const gap: Record<GraphNodeKind, number> = { question: 0, theme: 80, video: 52, perspective: 90 };
+    const gap: Record<GraphNodeKind, number> = { question: 0, theme: 90, video: 70, perspective: 100 };
     const maxH = Math.max(...(Object.keys(byKind) as GraphNodeKind[]).map((k) => byKind[k].length * gap[k]));
     let idx = 0;
     const nodes: Node<Data>[] = [];

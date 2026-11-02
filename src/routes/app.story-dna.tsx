@@ -64,7 +64,7 @@ function StoryDNA() {
           <li className="flex items-center gap-2"><span className="h-3 w-3 border-2 border-foreground" />Research question</li>
           <li className="flex items-center gap-2"><span className="h-3 w-3 border border-foreground" />Theme (count = records)</li>
           <li className="flex items-center gap-2"><span className="h-3 w-3 border border-border bg-background" />Video record</li>
-          <li className="flex items-center gap-2"><span className="h-3 w-3 rounded-full border border-border" />Perspective</li>
+          <li className="flex items-center gap-2"><span className="h-3 w-3 rounded-full border border-dashed border-foreground" />Perspective</li>
           <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary" />Saved</li>
         </ul>
       </div>
@@ -76,8 +76,8 @@ function StoryDNA() {
           <Link to="/app/discover" className="mt-4 inline-block text-sm text-primary hover:underline">Adjust search in Discover →</Link>
         </div>
       ) : view === "graph" ? (
-        <div className="grid flex-1 lg:grid-cols-[1fr_320px]">
-          <div className="relative h-[70vh] min-h-[480px] lg:h-[calc(100vh-240px)] lg:min-h-[560px]">
+        <div className="grid lg:grid-cols-[1fr_280px]">
+          <div className="relative h-[560px] lg:h-[660px]">
             {hydrated && status === "ready" ? (
               <Suspense fallback={<p className="p-6 text-sm text-muted-foreground">Loading graph…</p>}>
                 <StoryGraph question={query} records={records} selectedId={sel?.id ?? null} savedIds={saved} onSelect={onSelect} />

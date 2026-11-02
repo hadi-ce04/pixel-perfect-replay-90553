@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { X } from "lucide-react";
+import { useState } from "react";
 import { TOPICS, topicOf } from "@/data/catalog";
 import { ResultCard } from "@/components/parallax/ResultCard";
 import { SearchBar } from "@/components/parallax/SearchBar";
@@ -43,6 +44,7 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
 }
 
 function Discover() {
+  const [showFilters, setShowFilters] = useState(false);
   const { query, filters, setFilters, runSearch } = useStore();
   const { results, status, error } = useResults();
   const set = (f: Partial<SearchFilters>) => setFilters({ ...filters, ...f });
@@ -62,9 +64,12 @@ function Discover() {
       <div className="mt-6">
         <SearchBar size="md" />
       </div>
+      <Button variant="outline" size="sm" className="mt-4 lg:hidden" aria-expanded={showFilters} aria-controls="research-filters" onClick={() => setShowFilters((s) => !s)}>
+        {showFilters ? "Hide filters" : "Show filters"}{active.length > 0 ? ` (${active.length})` : ""}
+      </Button>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[220px_1fr]">
-        <aside aria-label="Filters" className="space-y-6">
+        <aside id="research-filters" aria-label="Filters" className={`space-y-6 ${showFilters ? "block" : "hidden lg:block"}`}>
           <fieldset>
             <legend className="eyebrow mb-2">Platform</legend>
             <div className="flex flex-wrap gap-1.5">
