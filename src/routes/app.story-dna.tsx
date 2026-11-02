@@ -74,7 +74,7 @@ function StoryDNA() {
         </div>
       ) : view === "graph" ? (
         <div className="grid flex-1 lg:grid-cols-[1fr_320px]">
-          <div className="relative h-[70vh] min-h-[480px] lg:h-auto">
+          <div className="relative h-[70vh] min-h-[480px] lg:h-[calc(100vh-240px)] lg:min-h-[560px]">
             {hydrated && status === "ready" ? (
               <Suspense fallback={<p className="p-6 text-sm text-muted-foreground">Loading graph…</p>}>
                 <StoryGraph question={query} records={records} selectedId={sel?.id ?? null} savedIds={saved} onSelect={onSelect} />

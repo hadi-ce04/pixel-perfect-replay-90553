@@ -67,7 +67,8 @@ export function generateBrief(question: string, records: VideoRecord[]): Brief {
   verification.push("These records are fictional demonstration data; replace with real, verified sources before any publication.");
 
   const angles: string[] = [];
-  if (themes[0]) angles.push(`Lead with "${themes[0].label}", the most recurrent theme in this selection (${themes[0].recordIds.length} of ${sorted.length} records).`);
+  if (themes[0] && themes[0].recordIds.length < 2) angles.push("No theme recurs across records yet; save more evidence before choosing a lead theme.");
+  else if (themes[0]) angles.push(`Lead with "${themes[0].label}", the most recurrent theme in this selection (${themes[0].recordIds.length} of ${sorted.length} records).`);
   const [p0, p1] = perspectives;
   if (p0 && p1)
     angles.push(`Contrast ${p0.label.toLowerCase()} accounts with ${p1.label.toLowerCase()} viewpoints already present in the selection.`);
