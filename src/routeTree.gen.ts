@@ -11,6 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/app'
+import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppBriefRouteImport } from './routes/app.brief'
+import { Route as AppDiscoverRouteImport } from './routes/app.discover'
+import { Route as AppSavedRouteImport } from './routes/app.saved'
+import { Route as AppStoryDnaRouteImport } from './routes/app.story-dna'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +27,91 @@ const AppRoute = AppRouteImport.update({
   path: '/app',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBriefRoute = AppBriefRouteImport.update({
+  id: '/brief',
+  path: '/brief',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDiscoverRoute = AppDiscoverRouteImport.update({
+  id: '/discover',
+  path: '/discover',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSavedRoute = AppSavedRouteImport.update({
+  id: '/saved',
+  path: '/saved',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppStoryDnaRoute = AppStoryDnaRouteImport.update({
+  id: '/story-dna',
+  path: '/story-dna',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
+  '/app': typeof AppRouteWithChildren
+  '/app/brief': typeof AppBriefRoute
+  '/app/discover': typeof AppDiscoverRoute
+  '/app/saved': typeof AppSavedRoute
+  '/app/story-dna': typeof AppStoryDnaRoute
+  '/app/': typeof AppIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
+  '/app/brief': typeof AppBriefRoute
+  '/app/discover': typeof AppDiscoverRoute
+  '/app/saved': typeof AppSavedRoute
+  '/app/story-dna': typeof AppStoryDnaRoute
+  '/app': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
+  '/app': typeof AppRouteWithChildren
+  '/app/brief': typeof AppBriefRoute
+  '/app/discover': typeof AppDiscoverRoute
+  '/app/saved': typeof AppSavedRoute
+  '/app/story-dna': typeof AppStoryDnaRoute
+  '/app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/app/brief'
+    | '/app/discover'
+    | '/app/saved'
+    | '/app/story-dna'
+    | '/app/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app'
-  id: '__root__' | '/' | '/app'
+  to:
+    | '/'
+    | '/app/brief'
+    | '/app/discover'
+    | '/app/saved'
+    | '/app/story-dna'
+    | '/app'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/app/brief'
+    | '/app/discover'
+    | '/app/saved'
+    | '/app/story-dna'
+    | '/app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AppRoute: typeof AppRoute
+  AppRoute: typeof AppRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +130,65 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/brief': {
+      id: '/app/brief'
+      path: '/brief'
+      fullPath: '/app/brief'
+      preLoaderRoute: typeof AppBriefRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/discover': {
+      id: '/app/discover'
+      path: '/discover'
+      fullPath: '/app/discover'
+      preLoaderRoute: typeof AppDiscoverRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/saved': {
+      id: '/app/saved'
+      path: '/saved'
+      fullPath: '/app/saved'
+      preLoaderRoute: typeof AppSavedRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/story-dna': {
+      id: '/app/story-dna'
+      path: '/story-dna'
+      fullPath: '/app/story-dna'
+      preLoaderRoute: typeof AppStoryDnaRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppBriefRoute: typeof AppBriefRoute
+  AppDiscoverRoute: typeof AppDiscoverRoute
+  AppSavedRoute: typeof AppSavedRoute
+  AppStoryDnaRoute: typeof AppStoryDnaRoute
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppBriefRoute: AppBriefRoute,
+  AppDiscoverRoute: AppDiscoverRoute,
+  AppSavedRoute: AppSavedRoute,
+  AppStoryDnaRoute: AppStoryDnaRoute,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AppRoute: AppRoute,
+  AppRoute: AppRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
