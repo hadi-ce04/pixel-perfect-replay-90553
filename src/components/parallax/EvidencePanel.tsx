@@ -62,7 +62,7 @@ export function EvidencePanel() {
                         type="button"
                         onClick={() => setActive(i)}
                         aria-pressed={active === i}
-                        className={`w-full rounded-sm border p-3 text-left transition-colors ${
+                        className={`block h-auto w-full rounded-sm border p-3 text-left transition-colors ${
                           active === i ? "border-primary bg-secondary" : "border-border hover:border-foreground/25"
                         }`}
                       >
