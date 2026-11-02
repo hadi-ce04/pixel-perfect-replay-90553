@@ -47,12 +47,12 @@ export function generateBrief(question: string, records: VideoRecord[]): Brief {
   let comparisonNote: string;
   if (sorted.length < 2) comparisonNote = "Only one record is selected. Save more evidence to compare perspectives.";
   else if (perspectives.length < 2)
-    comparisonNote = `All selected records share one perspective (${perspectives[0].label}). The selection cannot support a contrast between viewpoints.`;
+    comparisonNote = `All selected records share one perspective (${perspectives[0]?.label}). The selection cannot support a contrast between viewpoints.`;
   else comparisonNote = `The selection includes ${perspectives.length} distinct perspectives, listed below with their records.`;
 
   const excerpts: BriefReference[] = sorted.map((r) => {
     const e = r.evidence.find((x) => x.modality === "speech") ?? r.evidence[0];
-    return { recordId: r.id, title: r.title, excerpt: e.excerpt, modality: e.modality, startSeconds: e.startSeconds, endSeconds: e.endSeconds };
+    return { recordId: r.id, title: r.title, excerpt: e?.excerpt ?? "", modality: e?.modality ?? "speech", startSeconds: e?.startSeconds ?? 0, endSeconds: e?.endSeconds ?? 0 };
   });
 
   const verification: string[] = [];
@@ -68,9 +68,11 @@ export function generateBrief(question: string, records: VideoRecord[]): Brief {
 
   const angles: string[] = [];
   if (themes[0]) angles.push(`Lead with "${themes[0].label}", the most recurrent theme in this selection (${themes[0].recordIds.length} of ${sorted.length} records).`);
-  if (perspectives.length >= 2)
-    angles.push(`Contrast ${perspectives[0].label.toLowerCase()} accounts with ${perspectives[1].label.toLowerCase()} viewpoints already present in the selection.`);
-  if (themes.length >= 2) angles.push(`Explore how "${themes[0].label}" connects to "${themes[1].label}" in the same records.`);
+  const [p0, p1] = perspectives;
+  if (p0 && p1)
+    angles.push(`Contrast ${p0.label.toLowerCase()} accounts with ${p1.label.toLowerCase()} viewpoints already present in the selection.`);
+  const [t0, t1] = themes;
+  if (t0 && t1) angles.push(`Explore how "${t0.label}" connects to "${t1.label}" in the same records.`);
   if (sorted.some((r) => r.evidence.some((e) => e.modality === "visual")))
     angles.push("Visual evidence in the selection could support a documentary or photo-led treatment.");
 
@@ -79,7 +81,7 @@ export function generateBrief(question: string, records: VideoRecord[]): Brief {
     recordCount: sorted.length,
     platforms,
     topics: [...new Set(sorted.map((r) => topicOf(r.topic).label))],
-    dateRange: dates.length ? [dates[0], dates[dates.length - 1]] : null,
+    dateRange: dates.length ? [dates[0]!, dates[dates.length - 1]!] : null,
     themes,
     perspectives,
     comparisonNote,
