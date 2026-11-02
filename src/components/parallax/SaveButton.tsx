@@ -1,11 +1,11 @@
-import { Bookmark, BookmarkCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useStore } from "@/lib/store";
 
 export function SaveButton({ id, compact = false }: { id: string; compact?: boolean }) {
   const { isSaved, toggleSaved } = useStore();
   const saved = isSaved(id);
   return (
-    <button
+    <Button variant="editorial"
       type="button"
       onClick={(e) => {
         e.stopPropagation();
@@ -13,12 +13,11 @@ export function SaveButton({ id, compact = false }: { id: string; compact?: bool
       }}
       aria-pressed={saved}
       aria-label={saved ? `Remove ${id} from saved evidence` : `Save ${id} as evidence`}
-      className={`inline-flex items-center gap-1.5 rounded-sm border px-2.5 py-1.5 text-xs font-medium transition-colors ${
-        saved ? "border-primary/60 bg-primary/15 text-foreground" : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+      className={`inline-flex items-center gap-1.5 border-b px-1 py-1 text-xs font-medium transition-colors ${
+        saved ? "border-primary text-primary" : "border-border text-muted-foreground hover:border-primary hover:text-primary"
       }`}
     >
-      {saved ? <BookmarkCheck className="h-3.5 w-3.5 text-primary" /> : <Bookmark className="h-3.5 w-3.5" />}
-      {!compact && (saved ? "Saved" : "Save")}
-    </button>
+      {saved ? "Saved" : compact ? "Save" : "Save evidence"}
+    </Button>
   );
 }

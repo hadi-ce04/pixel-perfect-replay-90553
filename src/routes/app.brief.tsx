@@ -1,5 +1,5 @@
+import { Button } from "@/components/ui/button";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Copy, Download } from "lucide-react";
 import { useMemo } from "react";
 import { toast } from "sonner";
 import { briefToMarkdown, generateBrief } from "@/lib/brief";
@@ -14,6 +14,8 @@ export const Route = createFileRoute("/app/brief")({
       { name: "description", content: "A deterministic brief generated from your saved demonstration evidence." },
       { property: "og:title", content: "Editorial brief — PARALLAX workspace" },
       { property: "og:description", content: "A deterministic brief generated from your saved demonstration evidence." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: BriefPage,
@@ -22,9 +24,9 @@ export const Route = createFileRoute("/app/brief")({
 function Ref({ id }: { id: string }) {
   const { openRecord } = useStore();
   return (
-    <button type="button" onClick={() => openRecord(id)} className="font-mono text-xs text-primary hover:underline">
+    <Button variant="editorial" type="button" onClick={() => openRecord(id)} className="font-mono text-xs text-primary hover:underline">
       {id}
-    </button>
+    </Button>
   );
 }
 
@@ -74,15 +76,15 @@ function BriefPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="eyebrow">Workspace · Editorial brief</p>
         <div className="flex gap-2">
-          <button type="button" onClick={copy} className="inline-flex items-center gap-1.5 rounded-sm border border-border px-3 py-1.5 text-xs"><Copy className="h-3.5 w-3.5" />Copy brief</button>
-          <button type="button" onClick={download} className="inline-flex items-center gap-1.5 rounded-sm border border-border px-3 py-1.5 text-xs"><Download className="h-3.5 w-3.5" />Download .md</button>
+          <Button variant="editorial" type="button" onClick={copy} className="inline-flex items-center gap-1.5 rounded-sm border border-border px-3 py-1.5 text-xs">Copy brief</Button>
+          <Button variant="editorial" type="button" onClick={download} className="inline-flex items-center gap-1.5 rounded-sm border border-border px-3 py-1.5 text-xs">Download .md</Button>
         </div>
       </div>
-      <div className="mt-6 border border-insight/40 bg-insight/10 p-3 text-xs">
+      <div className="mt-6 border border-border bg-secondary p-3 text-xs">
         Demonstration brief based on fictional records. Not real sources and not representative of public opinion.
       </div>
 
-      <article className="mt-8 space-y-10">
+      <article className="mt-8 space-y-10 border-t border-foreground pt-8">
         <header>
           <p className="eyebrow">Research question</p>
           <h1 className="mt-2 font-display text-4xl leading-tight md:text-5xl">{brief.question || "No research question set"}</h1>
@@ -90,13 +92,13 @@ function BriefPage() {
 
         <section>
           <h2 className="eyebrow mb-3">Source coverage</h2>
-          <dl className="grid grid-cols-2 gap-px border border-border bg-border sm:grid-cols-4">
-            <div className="bg-card p-3"><dd className="font-display text-3xl">{brief.recordCount}</dd><dt className="text-[11px] text-muted-foreground">Records included</dt></div>
+          <dl className="grid grid-cols-2 gap-4 border-y border-border py-4 sm:grid-cols-4">
+            <div className="py-1"><dd className="text-lg font-semibold">{brief.recordCount}</dd><dt className="text-[11px] text-muted-foreground">Records included</dt></div>
             {Object.entries(brief.platforms).map(([k, v]) => (
-              <div key={k} className="bg-card p-3"><dd className="font-display text-3xl">{v}</dd><dt className="text-[11px] text-muted-foreground">{k}</dt></div>
+              <div key={k} className="py-1"><dd className="text-lg font-semibold">{v}</dd><dt className="text-[11px] text-muted-foreground">{k}</dt></div>
             ))}
             {brief.dateRange && (
-              <div className="col-span-2 bg-card p-3 sm:col-span-1"><dd className="text-sm">{formatDate(brief.dateRange[0])} – {formatDate(brief.dateRange[1])}</dd><dt className="text-[11px] text-muted-foreground">Published range</dt></div>
+              <div className="col-span-2 py-1 sm:col-span-1"><dd className="text-sm">{formatDate(brief.dateRange[0])} – {formatDate(brief.dateRange[1])}</dd><dt className="text-[11px] text-muted-foreground">Published range</dt></div>
             )}
           </dl>
           <p className="mt-2 text-xs text-muted-foreground">Topics: {brief.topics.join(", ")}</p>
@@ -104,9 +106,9 @@ function BriefPage() {
 
         <section>
           <h2 className="eyebrow mb-3">Observed themes</h2>
-          <ul className="space-y-3">
+          <ul className="divide-y divide-border">
             {brief.themes.map((t) => (
-              <li key={t.id}>
+              <li key={t.id} className="py-3">
                 <p className="font-medium">{t.label} <span className="font-mono text-xs text-muted-foreground">{t.recordIds.length}/{brief.recordCount}</span></p>
                 <p className="text-sm text-muted-foreground">{t.description}</p>
                 <p className="mt-1 flex flex-wrap gap-2">{t.recordIds.map((id) => <Ref key={id} id={id} />)}</p>

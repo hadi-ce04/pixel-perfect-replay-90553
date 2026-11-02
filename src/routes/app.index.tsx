@@ -1,141 +1,34 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowUpRight, Clock } from "lucide-react";
-import { lazy, Suspense, useMemo } from "react";
-import { PERSPECTIVES, THEMES, TOPICS } from "@/data/catalog";
+import { TOPICS } from "@/data/catalog";
 import { RECORDS } from "@/data/records";
 import { SearchBar } from "@/components/parallax/SearchBar";
+import { Button } from "@/components/ui/button";
 import { useStore } from "@/lib/store";
 import { emptyFilters } from "@/lib/types";
-import { useHydrated } from "@/lib/useHydrated";
-
-const StoryGraph = lazy(() => import("@/components/parallax/StoryGraph").then((m) => ({ default: m.StoryGraph })));
 
 export const Route = createFileRoute("/app/")({
-  head: () => ({
-    meta: [
-      { title: "Overview — PARALLAX workspace" },
-      { name: "description", content: "Start an investigation across the PARALLAX demonstration dataset." },
-      { property: "og:title", content: "Overview — PARALLAX workspace" },
-      { property: "og:description", content: "Start an investigation across the PARALLAX demonstration dataset." },
-    ],
-  }),
-  component: Overview,
+  head: () => ({ meta: [
+    { title: "Research desk | PARALLAX" },
+    { name: "description", content: "Start a research question or return to your saved fictional evidence in PARALLAX." },
+    { property: "og:title", content: "Research desk | PARALLAX" },
+    { property: "og:description", content: "Start a research question or return to your saved fictional evidence in PARALLAX." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }), component: Overview,
 });
-
-const FEATURED = [
-  { topic: "housing", kicker: "Lead investigation", text: "Rent, guarantors and residence waiting lists in students' own words." },
-  { topic: "employment", kicker: "Labour", text: "Internship chains, the experience paradox and career pivots." },
-  { topic: "climate", kicker: "Environment", text: "From eco-anxiety to the cost of sustainable choices." },
-] as const;
-
 function Overview() {
   const { runSearch, setFilters, recent, saved } = useStore();
   const navigate = useNavigate();
-  const hydrated = useHydrated();
-  const go = (q: string) => {
-    setFilters(emptyFilters);
-    runSearch(q);
-    navigate({ to: "/app/discover" });
-  };
-  const housing = useMemo(() => RECORDS.filter((r) => r.topic === "housing"), []);
-  const stats = [
-    ["Records", RECORDS.length],
-    ["Topics", TOPICS.length],
-    ["Themes", THEMES.length],
-    ["Perspectives", PERSPECTIVES.length],
-    ["TikTok", RECORDS.filter((r) => r.platform === "TikTok").length],
-    ["Instagram", RECORDS.filter((r) => r.platform === "Instagram").length],
-  ] as const;
-
+  const go = (q: string) => { setFilters(emptyFilters); runSearch(q); navigate({ to: "/app/discover" }); };
   return (
     <div className="mx-auto max-w-6xl px-5 py-10 md:px-10 md:py-14">
-      <p className="eyebrow">Workspace · Overview</p>
-      <h1 className="mt-3 max-w-3xl font-display text-4xl leading-[1.05] md:text-6xl">What story are you chasing today?</h1>
-      <div className="mt-8 max-w-3xl">
-        <SearchBar navigateTo="/app/discover" />
-        <div className="mt-4 flex flex-wrap gap-2">
-          {TOPICS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => go(t.question)}
-              className="rounded-sm border border-border px-3 py-1.5 text-left text-xs text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
-            >
-              {t.question}
-            </button>
-          ))}
-        </div>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-foreground pb-4"><p className="eyebrow">PARALLAX / Research desk</p><span className="text-xs text-muted-foreground">Fictional demonstration collection</span></div>
+      <h1 className="mt-8 font-display text-4xl md:text-5xl">Start with a question.</h1>
+      <div className="mt-6 max-w-3xl"><SearchBar navigateTo="/app/discover" /></div>
+      <div className="mt-12 grid gap-12 lg:grid-cols-[2fr_1fr]">
+        <section><h2 className="eyebrow mb-4">Example investigations</h2><div className="divide-y divide-border border-y border-border">{TOPICS.map((t, i) => <div key={t.id} className="grid grid-cols-[30px_1fr] gap-4 py-5"><span className="pt-1 font-mono text-xs text-muted-foreground">0{i+1}</span><div><Button variant="editorial" onClick={() => go(t.question)} className="block font-display text-2xl leading-snug">{t.question}</Button><p className="mt-2 text-xs text-muted-foreground">{t.label} · {RECORDS.filter((r) => r.topic === t.id).length} fictional records</p></div></div>)}</div></section>
+        <aside className="space-y-10"><section><h2 className="eyebrow mb-4">Your evidence collection</h2><p className="font-display text-3xl">{saved.length} saved records</p><div className="mt-4 flex flex-col items-start gap-3 text-sm"><Link to="/app/saved" className="underline">Review saved evidence</Link><Link to="/app/brief" className="underline">Open editorial brief</Link></div></section><section className="border-t border-border pt-5"><h2 className="eyebrow mb-4">Recent investigations</h2>{recent.length === 0 ? <p className="text-sm text-muted-foreground">No recent searches in this browser.</p> : <ul className="divide-y divide-border">{recent.map((r) => <li key={r.query} className="py-3"><Button variant="editorial" onClick={() => go(r.query)} className="text-sm leading-relaxed underline">{r.query}</Button></li>)}</ul>}</section><p className="border-t border-border pt-5 text-xs leading-relaxed text-muted-foreground">45 fictional records across five topics. Quotes and figures are invented. Searches and saved evidence stay in this browser.</p></aside>
       </div>
-
-      <section className="mt-14">
-        <h2 className="eyebrow mb-4">Featured investigations</h2>
-        <div className="grid gap-px border border-border bg-border md:grid-cols-3">
-          {FEATURED.map((f) => {
-            const t = TOPICS.find((x) => x.id === f.topic)!;
-            const n = RECORDS.filter((r) => r.topic === f.topic).length;
-            return (
-              <button key={f.topic} type="button" onClick={() => go(t.question)} className="group bg-card p-6 text-left transition-colors hover:bg-secondary">
-                <div className="flex items-center justify-between">
-                  <span className="eyebrow text-primary">{f.kicker}</span>
-                  <ArrowUpRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                </div>
-                <h3 className="mt-4 font-display text-2xl leading-tight">{t.label}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{f.text}</p>
-                <p className="mt-4 font-mono text-xs text-muted-foreground">{n} demonstration records</p>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className="mt-14 grid gap-8 lg:grid-cols-[1.6fr_1fr]">
-        <div>
-          <div className="mb-4 flex items-end justify-between">
-            <h2 className="eyebrow">Story DNA preview · Student housing</h2>
-            <Link to="/app/story-dna" onClick={() => go((TOPICS[0]?.question ?? ""))} className="text-xs text-primary hover:underline">
-              Open full graph →
-            </Link>
-          </div>
-          <div className="h-[340px] border border-border bg-card">
-            {hydrated && (
-              <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading graph…</div>}>
-                <StoryGraph question="Student housing" records={housing} selectedId={null} savedIds={saved} interactive={false} />
-              </Suspense>
-            )}
-          </div>
-        </div>
-        <div className="space-y-8">
-          <div>
-            <h2 className="eyebrow mb-1">Dataset coverage</h2>
-            <p className="mb-4 text-xs text-muted-foreground">Counts describe the fictional demonstration dataset only — not public opinion or trends.</p>
-            <dl className="grid grid-cols-3 gap-px border border-border bg-border">
-              {stats.map(([k, v]) => (
-                <div key={k} className="bg-card p-3">
-                  <dd className="font-display text-3xl">{v}</dd>
-                  <dt className="text-[11px] text-muted-foreground">{k}</dt>
-                </div>
-              ))}
-            </dl>
-          </div>
-          <div>
-            <h2 className="eyebrow mb-3">Recent investigations</h2>
-            {recent.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Your searches will appear here. They are stored only in this browser.</p>
-            ) : (
-              <ul className="divide-y divide-border border-y border-border">
-                {recent.map((r) => (
-                  <li key={r.query}>
-                    <button type="button" onClick={() => go(r.query)} className="flex w-full items-center gap-3 py-2.5 text-left text-sm hover:text-primary">
-                      <Clock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                      <span className="line-clamp-1">{r.query}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

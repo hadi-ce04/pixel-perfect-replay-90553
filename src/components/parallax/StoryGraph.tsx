@@ -1,4 +1,4 @@
-import { Background, Controls, Handle, Position, ReactFlow, type Edge, type Node, type NodeProps } from "@xyflow/react";
+import { Controls, Handle, Position, ReactFlow, type Edge, type Node, type NodeProps } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useMemo } from "react";
 import { buildStoryGraph, type GraphNodeKind } from "@/lib/graph";
@@ -7,21 +7,20 @@ import type { VideoRecord } from "@/lib/types";
 type Data = { label: string; kind: GraphNodeKind; count?: number | undefined; selected: boolean; saved: boolean; dim: boolean; idx: number };
 
 const styles: Record<GraphNodeKind, string> = {
-  question: "border-foreground bg-foreground text-background max-w-[230px] font-display text-lg leading-tight px-4 py-3",
-  theme: "border-primary/70 bg-card text-foreground px-3 py-2 text-sm font-medium",
-  perspective: "border-insight/70 bg-card text-foreground px-3 py-2 text-sm rounded-full",
-  video: "border-border bg-background text-muted-foreground px-2.5 py-1.5 text-xs max-w-[240px]",
+  question: "border-2 border-foreground bg-background text-foreground max-w-[240px] font-display text-lg leading-tight px-4 py-3",
+  theme: "border-foreground bg-card text-foreground px-3 py-2 text-sm font-semibold",
+  perspective: "border-dashed border-foreground bg-card text-foreground px-3 py-2 text-sm italic rounded-full",
+  video: "border-border bg-background text-foreground px-2.5 py-1.5 text-xs max-w-[240px]",
 };
 
 function StoryNodeView({ data }: NodeProps<Node<Data>>) {
   return (
     <div
-      className={`fade-up border transition-all ${styles[data.kind]} ${data.selected ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""} ${data.dim ? "opacity-35" : ""}`}
-      style={{ animationDelay: `${Math.min(data.idx * 18, 700)}ms` }}
+      className={`border transition-colors ${styles[data.kind]} ${data.selected ? "!border-primary outline outline-2 outline-offset-2 outline-primary" : ""} ${data.dim ? "opacity-60" : ""}`}
     >
       <Handle type="target" position={Position.Left} className="!h-1 !w-1 !border-0 !bg-transparent" />
       <div className="flex items-center gap-2">
-        {data.kind === "video" && data.saved && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-label="saved" />}
+        {data.kind === "video" && data.saved && <span className="shrink-0 text-[10px] font-semibold uppercase text-primary">Saved</span>}
         <span className="line-clamp-2">{data.label}</span>
         {data.count !== undefined && <span className="font-mono text-[11px] text-muted-foreground">{data.count}</span>}
       </div>
@@ -60,17 +59,17 @@ export function StoryGraph({
   }, [selectedId, g.edges]);
 
   const { nodes, edges } = useMemo(() => {
-    const cols: Record<GraphNodeKind, number> = { question: 0, theme: 340, video: 680, perspective: 1080 };
+    const cols: Record<GraphNodeKind, number> = { question: 0, theme: 280, video: 530, perspective: 830 };
     const byKind: Record<GraphNodeKind, typeof g.nodes> = { question: [], theme: [], video: [], perspective: [] };
     g.nodes.forEach((n) => byKind[n.kind].push(n));
     // order videos by their first theme for tidier edges
     const themeOrder = byKind.theme.map((t) => t.refId);
     byKind.video.sort((a, b) => {
-      const ra = records.find((r) => r.id === a.refId)!;
-      const rb = records.find((r) => r.id === b.refId)!;
-      return themeOrder.indexOf(ra.themes[0] ?? "") - themeOrder.indexOf(rb.themes[0] ?? "");
+      const ra = records.find((r) => r.id === a.refId);
+      const rb = records.find((r) => r.id === b.refId);
+      return themeOrder.indexOf(ra?.themes[0] ?? "") - themeOrder.indexOf(rb?.themes[0] ?? "");
     });
-    const gap: Record<GraphNodeKind, number> = { question: 0, theme: 80, video: 52, perspective: 90 };
+    const gap: Record<GraphNodeKind, number> = { question: 0, theme: 90, video: 70, perspective: 100 };
     const maxH = Math.max(...(Object.keys(byKind) as GraphNodeKind[]).map((k) => byKind[k].length * gap[k]));
     let idx = 0;
     const nodes: Node<Data>[] = [];
@@ -126,7 +125,6 @@ export function StoryGraph({
       }}
       proOptions={{ hideAttribution: true }}
     >
-      <Background gap={48} color="oklch(1 0 0 / 5%)" />
       {interactive && <Controls showInteractive={false} position="bottom-right" />}
     </ReactFlow>
   );

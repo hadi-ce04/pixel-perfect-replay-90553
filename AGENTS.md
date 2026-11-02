@@ -13,3 +13,4 @@
 - Data access goes through `SearchProvider` (src/lib/provider.ts); `MockProvider` serves fictional fixtures. A live source must be added as a new provider adapter, not by changing UI code.
 - Search/filtering (src/lib/search.ts), graph relationships (src/lib/graph.ts) and brief generation (src/lib/brief.ts) stay in separate pure modules so they can be unit-tested.
 - Client state (query, filters, saved evidence, recent searches) lives in `StoreProvider` and persists to localStorage; no backend in this version.
+- Presentation is shared through semantic CSS tokens and the Button component; editorial layouts must not change provider, search, graph relationship, store or brief logic.

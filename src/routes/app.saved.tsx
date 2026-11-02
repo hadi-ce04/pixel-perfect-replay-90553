@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   AlertDialog,
@@ -11,7 +12,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { themeOf } from "@/data/catalog";
-import { PreviewTile } from "@/components/parallax/PreviewTile";
 import { recordById } from "@/lib/provider";
 import { useStore } from "@/lib/store";
 import { formatDate } from "@/lib/format";
@@ -23,6 +23,8 @@ export const Route = createFileRoute("/app/saved")({
       { name: "description", content: "Your collection of saved demonstration evidence records." },
       { property: "og:title", content: "Saved evidence — PARALLAX workspace" },
       { property: "og:description", content: "Your collection of saved demonstration evidence records." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Saved,
@@ -41,7 +43,7 @@ function Saved() {
           <div className="flex gap-2">
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <button type="button" className="rounded-sm border border-border px-3 py-2 text-xs text-muted-foreground hover:text-foreground">Clear collection</button>
+                <Button variant="editorial" type="button" className="rounded-sm border border-border px-3 py-2 text-xs text-muted-foreground hover:text-foreground">Clear collection</Button>
               </AlertDialogTrigger>
               <AlertDialogContent className="bg-card">
                 <AlertDialogHeader>
@@ -70,15 +72,14 @@ function Saved() {
         <ul className="mt-8 divide-y divide-border border-y border-border">
           {records.map((r) => (
             <li key={r.id} className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center">
-              <PreviewTile record={r} className="h-20 w-full shrink-0 sm:w-32" />
               <div className="min-w-0 flex-1">
                 <p className="font-mono text-[11px] text-muted-foreground">{r.id} · {r.platform} · {formatDate(r.publishedAt)}</p>
                 <h2 className="font-display text-xl leading-snug">{r.title}</h2>
                 <p className="mt-1 text-xs text-muted-foreground">{r.themes.map((t) => themeOf(t).label).join(" · ")}</p>
               </div>
               <div className="flex gap-2">
-                <button type="button" onClick={() => openRecord(r.id)} className="rounded-sm border border-border px-3 py-1.5 text-xs">Open</button>
-                <button type="button" onClick={() => removeSaved(r.id)} className="rounded-sm border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground" aria-label={`Remove ${r.id}`}>Remove</button>
+                <Button variant="editorial" type="button" onClick={() => openRecord(r.id)} className="rounded-sm border border-border px-3 py-1.5 text-xs">Open</Button>
+                <Button variant="editorial" type="button" onClick={() => removeSaved(r.id)} className="rounded-sm border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground" aria-label={`Remove ${r.id}`}>Remove</Button>
               </div>
             </li>
           ))}
