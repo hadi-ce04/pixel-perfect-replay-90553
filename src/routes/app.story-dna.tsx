@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { lazy, Suspense, useMemo, useState } from "react";
 import { perspectiveOf, themeOf } from "@/data/catalog";
@@ -16,6 +17,8 @@ export const Route = createFileRoute("/app/story-dna")({
       { name: "description", content: "See how themes, perspectives and video records connect in your investigation." },
       { property: "og:title", content: "Story DNA — PARALLAX workspace" },
       { property: "og:description", content: "See how themes, perspectives and video records connect in your investigation." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: StoryDNA,
@@ -46,22 +49,22 @@ function StoryDNA() {
           <div className="min-w-0">
             <h1 className="max-w-3xl font-display text-3xl leading-tight md:text-5xl">{query || "All demonstration records"}</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Relationships within the {records.length} retrieved demonstration records · {g.themeCounts.size} themes · {g.perspCounts.size} perspectives. Links come only from record fields.
+              {records.length} fictional records · {g.themeCounts.size} themes · {g.perspCounts.size} perspectives
             </p>
           </div>
           <div role="tablist" aria-label="View" className="flex border border-border">
             {(["graph", "list"] as const).map((v) => (
-              <button key={v} role="tab" aria-selected={view === v} type="button" onClick={() => setView(v)} className={`px-4 py-1.5 text-xs capitalize ${view === v ? "bg-foreground text-background" : "text-muted-foreground"}`}>
+              <Button variant="editorial" key={v} role="tab" aria-selected={view === v} type="button" onClick={() => setView(v)} className={`px-4 py-1.5 text-xs capitalize ${view === v ? "bg-foreground text-background" : "text-muted-foreground"}`}>
                 {v}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
         <ul className="mt-4 flex flex-wrap gap-4 text-xs text-muted-foreground" aria-label="Legend">
-          <li className="flex items-center gap-2"><span className="h-3 w-3 bg-foreground" />Research question</li>
-          <li className="flex items-center gap-2"><span className="h-3 w-3 border border-primary" />Theme (count = records)</li>
+          <li className="flex items-center gap-2"><span className="h-3 w-3 border-2 border-foreground" />Research question</li>
+          <li className="flex items-center gap-2"><span className="h-3 w-3 border border-foreground" />Theme (count = records)</li>
           <li className="flex items-center gap-2"><span className="h-3 w-3 border border-border bg-background" />Video record</li>
-          <li className="flex items-center gap-2"><span className="h-3 w-3 rounded-full border border-insight" />Perspective</li>
+          <li className="flex items-center gap-2"><span className="h-3 w-3 rounded-full border border-border" />Perspective</li>
           <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary" />Saved</li>
         </ul>
       </div>
@@ -86,8 +89,8 @@ function StoryDNA() {
           <aside className="border-t border-border bg-card p-6 lg:border-l lg:border-t-0" aria-live="polite">
             {!sel || sel.kind === "question" || sel.kind === "video" ? (
               <div className="text-sm text-muted-foreground">
-                <h2 className="eyebrow mb-2">Inspect</h2>
-                <p>Select a theme or perspective to see its description and evidence. Select a video to open its evidence panel.</p>
+                <h2 className="eyebrow mb-2">Evidence index</h2>
+                <p>No theme or perspective selected.</p>
               </div>
             ) : (
               <div>
@@ -95,10 +98,10 @@ function StoryDNA() {
                 <h2 className="mt-1 font-display text-3xl">{sel.kind === "theme" ? themeOf(sel.ref).label : perspectiveOf(sel.ref).label}</h2>
                 <p className="mt-2 text-sm text-muted-foreground">{sel.kind === "theme" ? themeOf(sel.ref).description : perspectiveOf(sel.ref).description}</p>
                 <h3 className="eyebrow mb-2 mt-6">Associated evidence · {panelRecords.length}</h3>
-                <ul className="space-y-2">
+                <ul className="divide-y divide-border">
                   {panelRecords.map((r) => (
-                    <li key={r.id} className="border border-border p-3">
-                      <button type="button" onClick={() => openRecord(r.id)} className="text-left text-sm font-medium hover:text-primary">{r.title}</button>
+                    <li key={r.id} className="py-4">
+                      <Button variant="editorial" type="button" onClick={() => openRecord(r.id)} className="text-left text-sm font-medium hover:text-primary">{r.title}</Button>
                       <div className="mt-2 flex items-center justify-between">
                         <span className="font-mono text-[11px] text-muted-foreground">{r.id} · {r.platform}</span>
                         <SaveButton id={r.id} compact />
@@ -121,7 +124,7 @@ function StoryDNA() {
                 <ul className="mt-3 space-y-1.5">
                   {records.filter((r) => r.themes.includes(t)).map((r) => (
                     <li key={r.id} className="flex flex-wrap items-center gap-3 text-sm">
-                      <button type="button" onClick={() => openRecord(r.id)} className="text-left hover:text-primary">{r.title}</button>
+                      <Button variant="editorial" type="button" onClick={() => openRecord(r.id)} className="text-left hover:text-primary">{r.title}</Button>
                       <span className="text-xs text-muted-foreground">{r.id} · perspective: {perspectiveOf(r.perspective).label}</span>
                       <SaveButton id={r.id} compact />
                     </li>

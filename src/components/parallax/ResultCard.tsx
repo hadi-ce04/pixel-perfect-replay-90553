@@ -1,8 +1,8 @@
+import { Button } from "@/components/ui/button";
 import { themeOf } from "@/data/catalog";
 import type { SearchResult } from "@/lib/types";
 import { useStore } from "@/lib/store";
 import { formatDate, formatTime } from "@/lib/format";
-import { PreviewTile } from "./PreviewTile";
 import { SaveButton } from "./SaveButton";
 
 export function ResultCard({ result }: { result: SearchResult }) {
@@ -27,13 +27,13 @@ export function ResultCard({ result }: { result: SearchResult }) {
         )}
         <p className="mt-3 text-xs text-muted-foreground">{record.themes.map((t) => themeOf(t).label).join(" · ")}</p>
         <div className="mt-4 flex items-center gap-4">
-          <button
+          <Button variant="editorial"
             type="button"
             onClick={() => openRecord(record.id)}
             className="text-xs font-semibold underline hover:text-primary"
           >
             Open evidence
-          </button>
+          </Button>
           <SaveButton id={record.id} />
         </div>
       </div>

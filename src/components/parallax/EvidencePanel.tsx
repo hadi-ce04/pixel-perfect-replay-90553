@@ -1,10 +1,10 @@
+import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { perspectiveOf, themeOf, topicOf } from "@/data/catalog";
 import { recordById } from "@/lib/provider";
 import { useStore } from "@/lib/store";
 import { formatDate, formatTime } from "@/lib/format";
-import { PreviewTile } from "./PreviewTile";
 import { SaveButton } from "./SaveButton";
 
 export function EvidencePanel() {
@@ -18,9 +18,9 @@ export function EvidencePanel() {
       <SheetContent side="right" className="w-full overflow-y-auto border-border bg-card p-0 sm:max-w-xl">
         {record && (
           <div className="flex flex-col">
-            <SheetHeader className="space-y-3 border-b border-border p-6 text-left">
+            <SheetHeader className="space-y-3 border-b border-border p-6 pr-12 text-left">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-sm border border-insight/40 bg-insight/10 px-2 py-0.5 text-[11px] font-medium">
+                <span className="rounded-sm border border-border bg-secondary px-2 py-0.5 text-[11px] font-medium">
                   Fictional demonstration record
                 </span>
                 <span className="font-mono text-xs text-muted-foreground">{record.id}</span>
@@ -33,7 +33,7 @@ export function EvidencePanel() {
             </SheetHeader>
 
             <div className="space-y-6 p-6">
-              <PreviewTile record={record} className="aspect-video w-full" />
+              <p className="border-b border-border pb-4 text-xs text-muted-foreground">Fictional source. No footage or external source is available.</p>
               <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
                 {[
                   ["Source", record.creatorLabel],
@@ -53,17 +53,17 @@ export function EvidencePanel() {
               <section>
                 <h3 className="eyebrow mb-3">Evidence excerpts</h3>
                 <p className="mb-3 text-xs text-muted-foreground">
-                  Timestamps highlight the matching excerpt. No video exists to play.
+                  Timestamped passages from the fictional record.
                 </p>
                 <ol className="space-y-2">
                   {record.evidence.map((e, i) => (
                     <li key={i}>
-                      <button
+                      <Button variant="editorial"
                         type="button"
                         onClick={() => setActive(i)}
                         aria-pressed={active === i}
                         className={`w-full rounded-sm border p-3 text-left transition-colors ${
-                          active === i ? "border-primary bg-primary/10" : "border-border hover:border-foreground/25"
+                          active === i ? "border-primary bg-secondary" : "border-border hover:border-foreground/25"
                         }`}
                       >
                         <div className="mb-1.5 flex items-center gap-2 text-xs">
@@ -72,10 +72,10 @@ export function EvidencePanel() {
                           </span>
                           <span className="rounded-sm bg-muted px-1.5 py-0.5 text-muted-foreground">{e.modality}</span>
                         </div>
-                        <p className="text-sm leading-relaxed">
+                        <p className="font-display text-xl leading-relaxed">
                           {e.modality === "visual" ? e.excerpt : `“${e.excerpt}”`}
                         </p>
-                      </button>
+                      </Button>
                     </li>
                   ))}
                 </ol>
@@ -101,7 +101,7 @@ export function EvidencePanel() {
                 </p>
               </section>
 
-              <section className="rounded-sm border border-border bg-muted/50 p-4 text-sm">
+              <section className="border-t border-border pt-4 text-sm">
                 <h3 className="eyebrow mb-2">Context notes</h3>
                 <p className="text-muted-foreground">
                   The creator label is a generic descriptor, not a real account. Claims and figures in this record are invented

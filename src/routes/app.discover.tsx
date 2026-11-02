@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { X } from "lucide-react";
 import { TOPICS, topicOf } from "@/data/catalog";
@@ -14,6 +15,8 @@ export const Route = createFileRoute("/app/discover")({
       { name: "description", content: "Search fictional demonstration video records by question, topic, platform and date." },
       { property: "og:title", content: "Discover — PARALLAX workspace" },
       { property: "og:description", content: "Search fictional demonstration video records by question, topic, platform and date." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Discover,
@@ -28,14 +31,14 @@ function toggle<T>(arr: T[], v: T) {
 
 function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button
+    <Button variant="editorial"
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded-sm border px-2.5 py-1 text-xs transition-colors ${active ? "border-primary bg-primary/15 text-foreground" : "border-border text-muted-foreground hover:text-foreground"}`}
+      className={`rounded-sm border px-2.5 py-1 text-xs transition-colors ${active ? "border-primary bg-secondary text-foreground" : "border-border text-muted-foreground hover:text-foreground"}`}
     >
       {children}
-    </button>
+    </Button>
   );
 }
 
@@ -90,11 +93,11 @@ function Discover() {
             <legend className="eyebrow mb-2">Published</legend>
             <label className="block text-xs text-muted-foreground">
               From
-              <input type="date" value={filters.from ?? ""} onChange={(e) => set({ from: e.target.value || null })} className="mt-1 block w-full rounded-sm border border-input bg-card px-2 py-1.5 text-sm text-foreground [color-scheme:dark]" />
+              <input type="date" value={filters.from ?? ""} onChange={(e) => set({ from: e.target.value || null })} className="mt-1 block w-full rounded-sm border border-input bg-card px-2 py-1.5 text-sm text-foreground [color-scheme:light]" />
             </label>
             <label className="block text-xs text-muted-foreground">
               To
-              <input type="date" value={filters.to ?? ""} onChange={(e) => set({ to: e.target.value || null })} className="mt-1 block w-full rounded-sm border border-input bg-card px-2 py-1.5 text-sm text-foreground [color-scheme:dark]" />
+              <input type="date" value={filters.to ?? ""} onChange={(e) => set({ to: e.target.value || null })} className="mt-1 block w-full rounded-sm border border-input bg-card px-2 py-1.5 text-sm text-foreground [color-scheme:light]" />
             </label>
           </fieldset>
         </aside>
@@ -108,12 +111,12 @@ function Discover() {
               </span>
             </p>
             {active.map((a) => (
-              <button key={a.label} type="button" onClick={a.clear} className="inline-flex items-center gap-1 rounded-sm bg-secondary px-2 py-0.5 text-xs" aria-label={`Remove filter ${a.label}`}>
+              <Button variant="editorial" key={a.label} type="button" onClick={a.clear} className="inline-flex items-center gap-1 rounded-sm bg-secondary px-2 py-0.5 text-xs" aria-label={`Remove filter ${a.label}`}>
                 {a.label} <X className="h-3 w-3" />
-              </button>
+              </Button>
             ))}
             {active.length > 0 && (
-              <button type="button" onClick={() => setFilters(emptyFilters)} className="text-xs text-primary hover:underline">Clear all</button>
+              <Button variant="editorial" type="button" onClick={() => setFilters(emptyFilters)} className="text-xs text-primary hover:underline">Clear all</Button>
             )}
             {results.length > 0 && (
               <Link to="/app/story-dna" className="ml-auto text-xs text-primary hover:underline">View as Story DNA →</Link>
@@ -131,13 +134,13 @@ function Discover() {
                 The demonstration dataset covers housing, groceries, transport, youth employment and climate. Try broader words or remove filters.
               </p>
               <div className="mt-4 flex flex-wrap justify-center gap-2">
-                {active.length > 0 && <button type="button" onClick={() => setFilters(emptyFilters)} className="rounded-sm border border-border px-3 py-1.5 text-xs">Clear filters</button>}
-                <button type="button" onClick={() => runSearch((TOPICS[0]?.question ?? ""))} className="rounded-sm border border-border px-3 py-1.5 text-xs">Try the housing question</button>
+                {active.length > 0 && <Button variant="editorial" type="button" onClick={() => setFilters(emptyFilters)} className="rounded-sm border border-border px-3 py-1.5 text-xs">Clear filters</Button>}
+                <Button variant="editorial" type="button" onClick={() => runSearch((TOPICS[0]?.question ?? ""))} className="rounded-sm border border-border px-3 py-1.5 text-xs">Try the housing question</Button>
               </div>
             </div>
           )}
           {status === "ready" && results.length > 0 && (
-            <div className="space-y-3">{results.map((r) => <ResultCard key={r.record.id} result={r} />)}</div>
+            <div className="divide-y divide-border">{results.map((r) => <ResultCard key={r.record.id} result={r} />)}</div>
           )}
         </section>
       </div>
