@@ -132,7 +132,7 @@ function Discover() {
               </p>
               <div className="mt-4 flex flex-wrap justify-center gap-2">
                 {active.length > 0 && <button type="button" onClick={() => setFilters(emptyFilters)} className="rounded-sm border border-border px-3 py-1.5 text-xs">Clear filters</button>}
-                <button type="button" onClick={() => runSearch(TOPICS[0].question)} className="rounded-sm border border-border px-3 py-1.5 text-xs">Try the housing question</button>
+                <button type="button" onClick={() => runSearch((TOPICS[0]?.question ?? ""))} className="rounded-sm border border-border px-3 py-1.5 text-xs">Try the housing question</button>
               </div>
             </div>
           )}

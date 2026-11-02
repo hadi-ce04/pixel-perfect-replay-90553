@@ -92,7 +92,7 @@ function Overview() {
         <div>
           <div className="mb-4 flex items-end justify-between">
             <h2 className="eyebrow">Story DNA preview · Student housing</h2>
-            <Link to="/app/story-dna" onClick={() => go(TOPICS[0].question)} className="text-xs text-primary hover:underline">
+            <Link to="/app/story-dna" onClick={() => go((TOPICS[0]?.question ?? ""))} className="text-xs text-primary hover:underline">
               Open full graph →
             </Link>
           </div>

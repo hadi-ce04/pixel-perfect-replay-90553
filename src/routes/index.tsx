@@ -104,7 +104,7 @@ function Landing() {
             <button type="button" onClick={() => openWorkspace()} className="inline-flex items-center gap-2 rounded-sm bg-primary px-5 py-3 text-sm font-medium text-primary-foreground hover:opacity-90">
               Open workspace <ArrowRight className="h-4 w-4" />
             </button>
-            <button type="button" onClick={() => openWorkspace(TOPICS[0].question, "/app/story-dna")} className="rounded-sm border border-border px-5 py-3 text-sm hover:border-foreground/40">
+            <button type="button" onClick={() => openWorkspace((TOPICS[0]?.question ?? ""), "/app/story-dna")} className="rounded-sm border border-border px-5 py-3 text-sm hover:border-foreground/40">
               Explore Story DNA
             </button>
           </div>
