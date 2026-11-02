@@ -1,4 +1,4 @@
-import { perspectiveById, themeById, topicById } from "@/data/catalog";
+import { perspectiveOf, themeOf, topicOf } from "@/data/catalog";
 import { formatTime } from "./format";
 import type { VideoRecord } from "./types";
 
@@ -38,10 +38,10 @@ export function generateBrief(question: string, records: VideoRecord[]): Brief {
   }
   const dates = sorted.map((r) => r.publishedAt).sort();
   const themes = [...themeMap]
-    .map(([id, recordIds]) => ({ id, label: themeById[id]?.label ?? id, description: themeById[id]?.description ?? "", recordIds }))
+    .map(([id, recordIds]) => ({ id, label: themeOf(id)?.label ?? id, description: themeOf(id)?.description ?? "", recordIds }))
     .sort((a, b) => b.recordIds.length - a.recordIds.length || a.label.localeCompare(b.label));
   const perspectives = [...perspMap]
-    .map(([id, recordIds]) => ({ id, label: perspectiveById[id]?.label ?? id, recordIds }))
+    .map(([id, recordIds]) => ({ id, label: perspectiveOf(id)?.label ?? id, recordIds }))
     .sort((a, b) => b.recordIds.length - a.recordIds.length || a.label.localeCompare(b.label));
 
   let comparisonNote: string;
@@ -78,7 +78,7 @@ export function generateBrief(question: string, records: VideoRecord[]): Brief {
     question,
     recordCount: sorted.length,
     platforms,
-    topics: [...new Set(sorted.map((r) => topicById[r.topic].label))],
+    topics: [...new Set(sorted.map((r) => topicOf(r.topic).label))],
     dateRange: dates.length ? [dates[0], dates[dates.length - 1]] : null,
     themes,
     perspectives,

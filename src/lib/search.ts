@@ -1,4 +1,4 @@
-import { perspectiveById, themeById } from "@/data/catalog";
+import { perspectiveOf, themeOf } from "@/data/catalog";
 import type { SearchFilters, SearchResult, TopicId, VideoRecord } from "./types";
 
 const STOPWORDS = new Set(
@@ -40,8 +40,8 @@ export function detectTopics(query: string): TopicId[] {
 }
 
 function recordText(r: VideoRecord) {
-  const theme = r.themes.map((t) => themeById[t]?.label ?? t).join(" ");
-  const persp = perspectiveById[r.perspective]?.label ?? r.perspective;
+  const theme = r.themes.map((t) => themeOf(t)?.label ?? t).join(" ");
+  const persp = perspectiveOf(r.perspective)?.label ?? r.perspective;
   return normalize([r.title, r.description, theme, persp, r.contentType, ...r.evidence.map((e) => e.excerpt)].join(" "));
 }
 

@@ -3,7 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { lazy, Suspense, useMemo, useState } from "react";
 import { BrandMark, DemoBadge, Wordmark } from "@/components/parallax/Brand";
 import { EvidencePanel } from "@/components/parallax/EvidencePanel";
-import { TOPICS, themeById } from "@/data/catalog";
+import { TOPICS, themeOf } from "@/data/catalog";
 import { RECORDS } from "@/data/records";
 import { useStore } from "@/lib/store";
 import { emptyFilters, type TopicId } from "@/lib/types";
@@ -50,7 +50,7 @@ function HeroMap() {
               );
             })}
             <rect x={x - 62} y={y - 14} width="124" height="28" fill="var(--card)" stroke="var(--signal)" />
-            <text x={x} y={y + 4} textAnchor="middle" fontSize="11" fill="var(--foreground)">{themeById[t].label}</text>
+            <text x={x} y={y + 4} textAnchor="middle" fontSize="11" fill="var(--foreground)">{themeOf(t).label}</text>
           </g>
         );
       })}

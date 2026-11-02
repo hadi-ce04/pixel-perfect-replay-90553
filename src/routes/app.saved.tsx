@@ -10,7 +10,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { themeById } from "@/data/catalog";
+import { themeOf } from "@/data/catalog";
 import { PreviewTile } from "@/components/parallax/PreviewTile";
 import { recordById } from "@/lib/provider";
 import { useStore } from "@/lib/store";
@@ -74,7 +74,7 @@ function Saved() {
               <div className="min-w-0 flex-1">
                 <p className="font-mono text-[11px] text-muted-foreground">{r.id} · {r.platform} · {formatDate(r.publishedAt)}</p>
                 <h2 className="font-display text-xl leading-snug">{r.title}</h2>
-                <p className="mt-1 text-xs text-muted-foreground">{r.themes.map((t) => themeById[t].label).join(" · ")}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{r.themes.map((t) => themeOf(t).label).join(" · ")}</p>
               </div>
               <div className="flex gap-2">
                 <button type="button" onClick={() => openRecord(r.id)} className="rounded-sm border border-border px-3 py-1.5 text-xs">Open</button>

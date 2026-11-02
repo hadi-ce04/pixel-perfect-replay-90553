@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { lazy, Suspense, useMemo, useState } from "react";
-import { perspectiveById, themeById } from "@/data/catalog";
+import { perspectiveOf, themeOf } from "@/data/catalog";
 import { SaveButton } from "@/components/parallax/SaveButton";
 import { buildStoryGraph, type GraphNodeKind } from "@/lib/graph";
 import { useStore } from "@/lib/store";
@@ -92,8 +92,8 @@ function StoryDNA() {
             ) : (
               <div>
                 <p className="eyebrow">{sel.kind}</p>
-                <h2 className="mt-1 font-display text-3xl">{sel.kind === "theme" ? themeById[sel.ref].label : perspectiveById[sel.ref].label}</h2>
-                <p className="mt-2 text-sm text-muted-foreground">{sel.kind === "theme" ? themeById[sel.ref].description : perspectiveById[sel.ref].description}</p>
+                <h2 className="mt-1 font-display text-3xl">{sel.kind === "theme" ? themeOf(sel.ref).label : perspectiveOf(sel.ref).label}</h2>
+                <p className="mt-2 text-sm text-muted-foreground">{sel.kind === "theme" ? themeOf(sel.ref).description : perspectiveOf(sel.ref).description}</p>
                 <h3 className="eyebrow mb-2 mt-6">Associated evidence · {panelRecords.length}</h3>
                 <ul className="space-y-2">
                   {panelRecords.map((r) => (
@@ -116,13 +116,13 @@ function StoryDNA() {
           <div className="space-y-6">
             {[...g.themeCounts].map(([t, n]) => (
               <section key={t} className="border-t border-border pt-4">
-                <h3 className="font-display text-2xl">{themeById[t].label} <span className="font-mono text-sm text-muted-foreground">{n}</span></h3>
-                <p className="text-sm text-muted-foreground">{themeById[t].description}</p>
+                <h3 className="font-display text-2xl">{themeOf(t).label} <span className="font-mono text-sm text-muted-foreground">{n}</span></h3>
+                <p className="text-sm text-muted-foreground">{themeOf(t).description}</p>
                 <ul className="mt-3 space-y-1.5">
                   {records.filter((r) => r.themes.includes(t)).map((r) => (
                     <li key={r.id} className="flex flex-wrap items-center gap-3 text-sm">
                       <button type="button" onClick={() => openRecord(r.id)} className="text-left hover:text-primary">{r.title}</button>
-                      <span className="text-xs text-muted-foreground">{r.id} · perspective: {perspectiveById[r.perspective].label}</span>
+                      <span className="text-xs text-muted-foreground">{r.id} · perspective: {perspectiveOf(r.perspective).label}</span>
                       <SaveButton id={r.id} compact />
                     </li>
                   ))}
@@ -133,7 +133,7 @@ function StoryDNA() {
           <h2 className="eyebrow mb-3 mt-10">Perspectives</h2>
           <ul className="space-y-1 text-sm">
             {[...g.perspCounts].map(([p, n]) => (
-              <li key={p}><span className="font-medium">{perspectiveById[p].label}</span> <span className="text-muted-foreground">— {n} records</span></li>
+              <li key={p}><span className="font-medium">{perspectiveOf(p).label}</span> <span className="text-muted-foreground">— {n} records</span></li>
             ))}
           </ul>
         </div>

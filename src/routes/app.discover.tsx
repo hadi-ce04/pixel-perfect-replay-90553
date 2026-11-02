@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { X } from "lucide-react";
-import { TOPICS, topicById } from "@/data/catalog";
+import { TOPICS, topicOf } from "@/data/catalog";
 import { ResultCard } from "@/components/parallax/ResultCard";
 import { SearchBar } from "@/components/parallax/SearchBar";
 import { useStore } from "@/lib/store";
@@ -46,7 +46,7 @@ function Discover() {
 
   const active: { label: string; clear: () => void }[] = [
     ...filters.platforms.map((p) => ({ label: p, clear: () => set({ platforms: filters.platforms.filter((x) => x !== p) }) })),
-    ...filters.topics.map((t) => ({ label: topicById[t].label, clear: () => set({ topics: filters.topics.filter((x) => x !== t) }) })),
+    ...filters.topics.map((t) => ({ label: topicOf(t).label, clear: () => set({ topics: filters.topics.filter((x) => x !== t) }) })),
     ...filters.contentTypes.map((c) => ({ label: c, clear: () => set({ contentTypes: filters.contentTypes.filter((x) => x !== c) }) })),
     ...(filters.from ? [{ label: `From ${filters.from}`, clear: () => set({ from: null }) }] : []),
     ...(filters.to ? [{ label: `To ${filters.to}`, clear: () => set({ to: null }) }] : []),

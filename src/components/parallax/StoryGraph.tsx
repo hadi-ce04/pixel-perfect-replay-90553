@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { buildStoryGraph, type GraphNodeKind } from "@/lib/graph";
 import type { VideoRecord } from "@/lib/types";
 
-type Data = { label: string; kind: GraphNodeKind; count?: number; selected: boolean; saved: boolean; dim: boolean; idx: number };
+type Data = { label: string; kind: GraphNodeKind; count?: number | undefined; selected: boolean; saved: boolean; dim: boolean; idx: number };
 
 const styles: Record<GraphNodeKind, string> = {
   question: "border-foreground bg-foreground text-background max-w-[230px] font-display text-lg leading-tight px-4 py-3",
@@ -68,7 +68,7 @@ export function StoryGraph({
     byKind.video.sort((a, b) => {
       const ra = records.find((r) => r.id === a.refId)!;
       const rb = records.find((r) => r.id === b.refId)!;
-      return themeOrder.indexOf(ra.themes[0]) - themeOrder.indexOf(rb.themes[0]);
+      return themeOrder.indexOf(ra.themes[0] ?? "") - themeOrder.indexOf(rb.themes[0] ?? "");
     });
     const gap: Record<GraphNodeKind, number> = { question: 0, theme: 80, video: 52, perspective: 90 };
     const maxH = Math.max(...(Object.keys(byKind) as GraphNodeKind[]).map((k) => byKind[k].length * gap[k]));

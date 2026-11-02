@@ -1,4 +1,4 @@
-import { perspectiveById, themeById } from "@/data/catalog";
+import { perspectiveOf, themeOf } from "@/data/catalog";
 import type { VideoRecord } from "./types";
 
 export type GraphNodeKind = "question" | "theme" | "perspective" | "video";
@@ -27,11 +27,11 @@ export function buildStoryGraph(question: string, records: VideoRecord[]) {
     perspCounts.set(r.perspective, (perspCounts.get(r.perspective) ?? 0) + 1);
   }
   for (const [t, count] of themeCounts) {
-    nodes.push({ id: `t:${t}`, kind: "theme", label: themeById[t]?.label ?? t, refId: t, count });
+    nodes.push({ id: `t:${t}`, kind: "theme", label: themeOf(t)?.label ?? t, refId: t, count });
     edges.push({ id: `q-t:${t}`, source: "q", target: `t:${t}` });
   }
   for (const [p, count] of perspCounts) {
-    nodes.push({ id: `p:${p}`, kind: "perspective", label: perspectiveById[p]?.label ?? p, refId: p, count });
+    nodes.push({ id: `p:${p}`, kind: "perspective", label: perspectiveOf(p)?.label ?? p, refId: p, count });
   }
   for (const r of records) {
     nodes.push({ id: `v:${r.id}`, kind: "video", label: r.title, refId: r.id });

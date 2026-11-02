@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { perspectiveById, themeById, topicById } from "@/data/catalog";
+import { perspectiveOf, themeOf, topicOf } from "@/data/catalog";
 import { recordById } from "@/lib/provider";
 import { useStore } from "@/lib/store";
 import { formatDate, formatTime } from "@/lib/format";
@@ -41,7 +41,7 @@ export function EvidencePanel() {
                   ["Published", formatDate(record.publishedAt)],
                   ["Duration", formatTime(record.durationSeconds)],
                   ["Content type", record.contentType],
-                  ["Topic", topicById[record.topic].label],
+                  ["Topic", topicOf(record.topic).label],
                 ].map(([k, v]) => (
                   <div key={k}>
                     <dt className="eyebrow">{k}</dt>
@@ -86,8 +86,8 @@ export function EvidencePanel() {
                 <ul className="space-y-2">
                   {record.themes.map((t) => (
                     <li key={t} className="text-sm">
-                      <span className="font-medium">{themeById[t].label}</span>
-                      <span className="text-muted-foreground"> — {themeById[t].description}</span>
+                      <span className="font-medium">{themeOf(t).label}</span>
+                      <span className="text-muted-foreground"> — {themeOf(t).description}</span>
                     </li>
                   ))}
                 </ul>
@@ -96,8 +96,8 @@ export function EvidencePanel() {
               <section>
                 <h3 className="eyebrow mb-2">Perspective</h3>
                 <p className="text-sm">
-                  <span className="font-medium">{perspectiveById[record.perspective].label}</span>
-                  <span className="text-muted-foreground"> — {perspectiveById[record.perspective].description}</span>
+                  <span className="font-medium">{perspectiveOf(record.perspective).label}</span>
+                  <span className="text-muted-foreground"> — {perspectiveOf(record.perspective).description}</span>
                 </p>
               </section>
 

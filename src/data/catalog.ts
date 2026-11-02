@@ -50,3 +50,8 @@ export const PERSPECTIVES: Perspective[] = [
 export const themeById = Object.fromEntries(THEMES.map((t) => [t.id, t])) as Record<string, Theme>;
 export const perspectiveById = Object.fromEntries(PERSPECTIVES.map((p) => [p.id, p])) as Record<string, Perspective>;
 export const topicById = Object.fromEntries(TOPICS.map((t) => [t.id, t])) as Record<string, Topic>;
+
+const fallbackTheme = (id: string): Theme => ({ id, label: id, topic: "housing", description: "" });
+export const themeOf = (id: string): Theme => themeById[id] ?? fallbackTheme(id);
+export const perspectiveOf = (id: string): Perspective => perspectiveById[id] ?? { id, label: id, description: "" };
+export const topicOf = (id: string): Topic => topicById[id] ?? { id: "housing", label: id, question: "" };

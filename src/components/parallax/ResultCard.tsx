@@ -1,4 +1,4 @@
-import { themeById } from "@/data/catalog";
+import { themeOf } from "@/data/catalog";
 import type { SearchResult } from "@/lib/types";
 import { useStore } from "@/lib/store";
 import { formatDate, formatTime } from "@/lib/format";
@@ -30,7 +30,7 @@ export function ResultCard({ result }: { result: SearchResult }) {
         <div className="mt-3 flex flex-wrap gap-1.5">
           {record.themes.map((t) => (
             <span key={t} className="rounded-sm border border-border px-2 py-0.5 text-[11px] text-muted-foreground">
-              {themeById[t].label}
+              {themeOf(t).label}
             </span>
           ))}
         </div>
