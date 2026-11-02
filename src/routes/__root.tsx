@@ -81,9 +81,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "PARALLAX: research across social video" },
-      { name: "description", content: "Search video conversations, trace perspectives and assemble a brief from selected evidence." },
+      {
+        name: "description",
+        content:
+          "Search video conversations, trace perspectives and assemble a brief from selected evidence.",
+      },
       { property: "og:title", content: "PARALLAX: research across social video" },
-      { property: "og:description", content: "Search video conversations, trace perspectives and assemble a brief from selected evidence." },
+      {
+        property: "og:description",
+        content:
+          "Search video conversations, trace perspectives and assemble a brief from selected evidence.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -97,7 +105,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Source+Sans+3:wght@400;500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;650;700;800&display=swap",
       },
     ],
   }),

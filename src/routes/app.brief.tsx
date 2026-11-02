@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { toast } from "sonner";
 import { briefToMarkdown, generateBrief } from "@/lib/brief";
-import { recordById } from "@/lib/provider";
+import { useEvidenceCollection } from "@/lib/useEvidence";
 import { useStore } from "@/lib/store";
 import { formatDate, formatTime } from "@/lib/format";
 
@@ -11,9 +11,15 @@ export const Route = createFileRoute("/app/brief")({
   head: () => ({
     meta: [
       { title: "Editorial brief — PARALLAX workspace" },
-      { name: "description", content: "A deterministic brief generated from your saved demonstration evidence." },
+      {
+        name: "description",
+        content: "A deterministic brief generated from your saved demonstration evidence.",
+      },
       { property: "og:title", content: "Editorial brief — PARALLAX workspace" },
-      { property: "og:description", content: "A deterministic brief generated from your saved demonstration evidence." },
+      {
+        property: "og:description",
+        content: "A deterministic brief generated from your saved demonstration evidence.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -24,7 +30,12 @@ export const Route = createFileRoute("/app/brief")({
 function Ref({ id }: { id: string }) {
   const { openRecord } = useStore();
   return (
-    <Button variant="editorial" type="button" onClick={() => openRecord(id)} className="font-mono text-xs text-primary hover:underline">
+    <Button
+      variant="editorial"
+      type="button"
+      onClick={() => openRecord(id)}
+      className="font-mono text-xs text-primary hover:underline"
+    >
       {id}
     </Button>
   );
@@ -32,9 +43,19 @@ function Ref({ id }: { id: string }) {
 
 function BriefPage() {
   const { saved, query, hydrated } = useStore();
-  const records = useMemo(() => saved.map(recordById).filter((r) => r !== null), [saved]);
+  const { records, missingIds, isPending, isError, refetch } = useEvidenceCollection(
+    saved,
+    hydrated,
+  );
   const brief = useMemo(() => generateBrief(query, records), [query, records]);
-  const md = useMemo(() => briefToMarkdown(brief), [brief]);
+  const md = useMemo(
+    () =>
+      briefToMarkdown(brief) +
+      (missingIds.length
+        ? `\n\n## Unavailable saved records\nExcluded from this brief: ${missingIds.join(", ")}.`
+        : ""),
+    [brief, missingIds],
+  );
 
   const copy = async () => {
     try {
@@ -55,19 +76,52 @@ function BriefPage() {
     const url = URL.createObjectURL(new Blob([md], { type: "text/markdown" }));
     const a = document.createElement("a");
     a.href = url;
-    a.download = "parallax-demo-brief.md";
+    a.download =
+      brief.dataMode === "mock" ? "parallax-demo-brief.md" : "parallax-editorial-brief.md";
     a.click();
     URL.revokeObjectURL(url);
   };
 
   if (!hydrated) return null;
+  if (isPending)
+    return (
+      <p role="status" className="mx-auto max-w-3xl px-5 py-16 text-sm text-muted-foreground">
+        Loading evidence for your brief…
+      </p>
+    );
+  if (isError)
+    return (
+      <div role="alert" className="mx-auto max-w-3xl px-5 py-16">
+        <h1 className="font-display text-3xl">Could not load the brief's evidence</h1>
+        <p className="mt-3 text-sm text-muted-foreground">
+          Your selection is still saved. Retry before generating or exporting a brief.
+        </p>
+        <Button className="mt-4" variant="outline" onClick={() => void refetch()}>
+          Try again
+        </Button>
+      </div>
+    );
   if (records.length === 0)
     return (
       <div className="mx-auto max-w-3xl px-5 py-16 text-center md:px-10">
         <p className="eyebrow">Workspace · Editorial brief</p>
         <h1 className="mt-3 font-display text-4xl">Your brief starts with evidence</h1>
-        <p className="mt-3 text-sm text-muted-foreground">Save at least one record and PARALLAX will assemble a brief strictly from what you selected.</p>
-        <Link to="/app/discover" className="mt-6 inline-block rounded-sm bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">Find evidence</Link>
+        <p className="mt-3 text-sm text-muted-foreground">
+          {missingIds.length
+            ? "Your saved records are unavailable from the current source. Review your saved evidence or select available records."
+            : "Save at least one record and PARALLAX will assemble a brief strictly from what you selected."}
+        </p>
+        {missingIds.length > 0 && (
+          <Link to="/app/saved" className="mt-4 block text-sm text-primary underline">
+            Review unavailable records
+          </Link>
+        )}
+        <Link
+          to="/app/discover"
+          className="mt-6 inline-block rounded-sm bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+        >
+          Find evidence
+        </Link>
       </div>
     );
 
@@ -76,29 +130,68 @@ function BriefPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="eyebrow">Workspace · Editorial brief</p>
         <div className="flex gap-2">
-          <Button variant="editorial" type="button" onClick={copy} className="inline-flex items-center gap-1.5 rounded-sm border border-border px-3 py-1.5 text-xs">Copy brief</Button>
-          <Button variant="editorial" type="button" onClick={download} className="inline-flex items-center gap-1.5 rounded-sm border border-border px-3 py-1.5 text-xs">Download .md</Button>
+          <Button
+            variant="editorial"
+            type="button"
+            onClick={copy}
+            className="inline-flex items-center gap-1.5 rounded-sm border border-border px-3 py-1.5 text-xs"
+          >
+            Copy brief
+          </Button>
+          <Button
+            variant="editorial"
+            type="button"
+            onClick={download}
+            className="inline-flex items-center gap-1.5 rounded-sm border border-border px-3 py-1.5 text-xs"
+          >
+            Download .md
+          </Button>
         </div>
       </div>
       <div className="mt-6 border border-border bg-secondary p-3 text-xs">
-        Demonstration brief based on fictional records. Not real sources and not representative of public opinion.
+        {brief.dataMode === "mock"
+          ? "Demonstration brief based on fictional records. Not real sources and not representative of public opinion."
+          : brief.dataMode === "mixed"
+            ? "This brief includes fictional demonstration records alongside source records. Replace fictional records before publication."
+            : "Research brief based on selected source records. Claims require independent verification; the selection does not represent public opinion."}
       </div>
 
       <article className="mt-8 space-y-10 border-t border-foreground pt-8">
+        {missingIds.length > 0 && (
+          <p role="status" className="text-sm text-muted-foreground">
+            {missingIds.length} unavailable saved records were excluded: {missingIds.join(", ")}.{" "}
+            <Link to="/app/saved" className="text-primary underline">
+              Review selection
+            </Link>
+          </p>
+        )}
         <header>
           <p className="eyebrow">Research question</p>
-          <h1 className="mt-2 font-display text-4xl leading-tight md:text-5xl">{brief.question || "No research question set"}</h1>
+          <h1 className="mt-2 font-display text-4xl leading-tight md:text-5xl">
+            {brief.question || "No research question set"}
+          </h1>
         </header>
 
         <section>
           <h2 className="eyebrow mb-3">Source coverage</h2>
           <dl className="grid grid-cols-2 gap-4 border-y border-border py-4 sm:grid-cols-4">
-            <div className="py-1"><dd className="text-lg font-semibold">{brief.recordCount}</dd><dt className="text-[11px] text-muted-foreground">Records included</dt></div>
+            <div className="py-1">
+              <dd className="text-lg font-semibold">{brief.recordCount}</dd>
+              <dt className="text-[11px] text-muted-foreground">Records included</dt>
+            </div>
             {Object.entries(brief.platforms).map(([k, v]) => (
-              <div key={k} className="py-1"><dd className="text-lg font-semibold">{v}</dd><dt className="text-[11px] text-muted-foreground">{k}</dt></div>
+              <div key={k} className="py-1">
+                <dd className="text-lg font-semibold">{v}</dd>
+                <dt className="text-[11px] text-muted-foreground">{k}</dt>
+              </div>
             ))}
             {brief.dateRange && (
-              <div className="col-span-2 py-1 sm:col-span-1"><dd className="text-sm">{formatDate(brief.dateRange[0])} – {formatDate(brief.dateRange[1])}</dd><dt className="text-[11px] text-muted-foreground">Published range</dt></div>
+              <div className="col-span-2 py-1 sm:col-span-1">
+                <dd className="text-sm">
+                  {formatDate(brief.dateRange[0])} – {formatDate(brief.dateRange[1])}
+                </dd>
+                <dt className="text-[11px] text-muted-foreground">Published range</dt>
+              </div>
             )}
           </dl>
           <p className="mt-2 text-xs text-muted-foreground">Topics: {brief.topics.join(", ")}</p>
@@ -109,9 +202,18 @@ function BriefPage() {
           <ul className="divide-y divide-border">
             {brief.themes.map((t) => (
               <li key={t.id} className="py-3">
-                <p className="font-medium">{t.label} <span className="font-mono text-xs text-muted-foreground">{t.recordIds.length}/{brief.recordCount}</span></p>
+                <p className="font-medium">
+                  {t.label}{" "}
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {t.recordIds.length}/{brief.recordCount}
+                  </span>
+                </p>
                 <p className="text-sm text-muted-foreground">{t.description}</p>
-                <p className="mt-1 flex flex-wrap gap-2">{t.recordIds.map((id) => <Ref key={id} id={id} />)}</p>
+                <p className="mt-1 flex flex-wrap gap-2">
+                  {t.recordIds.map((id) => (
+                    <Ref key={id} id={id} />
+                  ))}
+                </p>
               </li>
             ))}
           </ul>
@@ -122,7 +224,12 @@ function BriefPage() {
           <p className="text-sm">{brief.comparisonNote}</p>
           <ul className="mt-3 space-y-1.5">
             {brief.perspectives.map((p) => (
-              <li key={p.id} className="flex flex-wrap items-center gap-2 text-sm"><span className="font-medium">{p.label}</span>{p.recordIds.map((id) => <Ref key={id} id={id} />)}</li>
+              <li key={p.id} className="flex flex-wrap items-center gap-2 text-sm">
+                <span className="font-medium">{p.label}</span>
+                {p.recordIds.map((id) => (
+                  <Ref key={id} id={id} />
+                ))}
+              </li>
             ))}
           </ul>
         </section>
@@ -132,9 +239,12 @@ function BriefPage() {
           <ul className="space-y-4">
             {brief.excerpts.map((e) => (
               <li key={e.recordId} className="border-l-2 border-primary pl-4">
-                <p className="font-display text-xl leading-snug">{e.modality === "visual" ? e.excerpt : `“${e.excerpt}”`}</p>
+                <p className="font-display text-xl leading-snug">
+                  {e.modality === "visual" ? e.excerpt : `“${e.excerpt}”`}
+                </p>
                 <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                  <Ref id={e.recordId} /> · {e.modality} · {formatTime(e.startSeconds)}–{formatTime(e.endSeconds)} · {e.title}
+                  <Ref id={e.recordId} /> · {e.modality} · {formatTime(e.startSeconds)}–
+                  {formatTime(e.endSeconds)} · {e.title}
                 </p>
               </li>
             ))}
@@ -143,12 +253,20 @@ function BriefPage() {
 
         <section>
           <h2 className="eyebrow mb-3">Questions requiring independent verification</h2>
-          <ul className="list-disc space-y-1.5 pl-5 text-sm">{brief.verification.map((v) => <li key={v}>{v}</li>)}</ul>
+          <ul className="list-disc space-y-1.5 pl-5 text-sm">
+            {brief.verification.map((v) => (
+              <li key={v}>{v}</li>
+            ))}
+          </ul>
         </section>
 
         <section>
           <h2 className="eyebrow mb-3">Potential editorial angles</h2>
-          <ul className="list-disc space-y-1.5 pl-5 text-sm">{brief.angles.map((a) => <li key={a}>{a}</li>)}</ul>
+          <ul className="list-disc space-y-1.5 pl-5 text-sm">
+            {brief.angles.map((a) => (
+              <li key={a}>{a}</li>
+            ))}
+          </ul>
         </section>
       </article>
     </div>

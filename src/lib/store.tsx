@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { emptyFilters, type SearchFilters } from "./types";
 
 interface Recent {
@@ -28,13 +36,14 @@ const Ctx = createContext<Store | null>(null);
 const KEY = "parallax:v1";
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [query, setQuery] = useState("What are French students saying about housing affordability?");
+  const [query, setQuery] = useState(
+    "What are French students saying about housing affordability?",
+  );
   const [filters, setFilters] = useState<SearchFilters>(emptyFilters);
   const [saved, setSaved] = useState<string[]>([]);
   const [recent, setRecent] = useState<Recent[]>([]);
   const [openId, setOpenId] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
-  const loaded = useRef(false);
 
   useEffect(() => {
     try {
@@ -49,23 +58,27 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     } catch {
       /* ignore corrupt storage */
     }
-    loaded.current = true;
     setHydrated(true);
   }, []);
 
   useEffect(() => {
-    if (!loaded.current) return;
+    // The initial render must not overwrite storage while hydration restores it.
+    // A ref changes within the effect cycle and breaks StrictMode's effect replay.
+    if (!hydrated) return;
     try {
       localStorage.setItem(KEY, JSON.stringify({ query, filters, saved, recent }));
     } catch {
       /* storage unavailable */
     }
-  }, [query, filters, saved, recent]);
+  }, [query, filters, saved, recent, hydrated]);
 
   const runSearch = useCallback((q: string) => {
     const t = q.trim();
     setQuery(t);
-    if (t) setRecent((r) => [{ query: t, at: new Date().toISOString() }, ...r.filter((x) => x.query !== t)].slice(0, 6));
+    if (t)
+      setRecent((r) =>
+        [{ query: t, at: new Date().toISOString() }, ...r.filter((x) => x.query !== t)].slice(0, 6),
+      );
   }, []);
 
   const value = useMemo<Store>(
@@ -77,7 +90,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       runSearch,
       saved,
       isSaved: (id) => saved.includes(id),
-      toggleSaved: (id) => setSaved((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id])),
+      toggleSaved: (id) =>
+        setSaved((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id])),
       removeSaved: (id) => setSaved((s) => s.filter((x) => x !== id)),
       clearSaved: () => setSaved([]),
       recent,

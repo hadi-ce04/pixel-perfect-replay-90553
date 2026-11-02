@@ -24,7 +24,9 @@ export class MockProvider implements SearchProvider {
     return this.records.find((r) => r.id === id) ?? null;
   }
   async getMany(ids: string[]) {
-    return ids.map((id) => this.records.find((r) => r.id === id)).filter((r): r is VideoRecord => !!r);
+    return ids
+      .map((id) => this.records.find((r) => r.id === id))
+      .filter((r): r is VideoRecord => !!r);
   }
   async all() {
     return this.records;
@@ -32,6 +34,3 @@ export class MockProvider implements SearchProvider {
 }
 
 export const provider: SearchProvider = new MockProvider();
-
-// Synchronous helpers for the local dataset (mock mode only).
-export const recordById = (id: string) => RECORDS.find((r) => r.id === id) ?? null;

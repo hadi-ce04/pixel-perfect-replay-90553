@@ -3,6 +3,7 @@ import { lazy, Suspense, useMemo, useState } from "react";
 import { DemoBadge, Wordmark } from "@/components/parallax/Brand";
 import { Button } from "@/components/ui/button";
 import { EvidencePanel } from "@/components/parallax/EvidencePanel";
+import { TopicArt } from "@/components/parallax/TopicArt";
 import { SaveButton } from "@/components/parallax/SaveButton";
 import { TOPICS } from "@/data/catalog";
 import { RECORDS } from "@/data/records";
@@ -11,17 +12,21 @@ import { emptyFilters, type TopicId } from "@/lib/types";
 import { useHydrated } from "@/lib/useHydrated";
 import { formatTime } from "@/lib/format";
 
-const StoryGraph = lazy(() => import("@/components/parallax/StoryGraph").then((m) => ({ default: m.StoryGraph })));
-const description = "Search video conversations, trace different perspectives, and assemble an editorial brief from the evidence you select.";
+const StoryGraph = lazy(() =>
+  import("@/components/parallax/StoryGraph").then((m) => ({ default: m.StoryGraph })),
+);
+const description =
+  "Explore video conversations, connect perspectives, and build a story from the evidence.";
 export const Route = createFileRoute("/")({
-  head: () => ({ meta: [
-    { title: "PARALLAX: research across social video" },
-    { name: "description", content: description },
-    { property: "og:title", content: "PARALLAX: research across social video" },
-    { property: "og:description", content: description },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary_large_image" },
-  ] }),
+  head: () => ({
+    meta: [
+      { title: "PARALLAX | Look closer. Find the story." },
+      { name: "description", content: description },
+      { property: "og:title", content: "PARALLAX | Look closer. Find the story." },
+      { property: "og:description", content: description },
+      { property: "og:type", content: "website" },
+    ],
+  }),
   component: Landing,
 });
 
@@ -31,75 +36,394 @@ function Landing() {
   const hydrated = useHydrated();
   const [topic, setTopic] = useState<TopicId>("housing");
   const [selected, setSelected] = useState<string | null>(null);
-  const currentTopic = TOPICS.find((t) => t.id === topic) ?? TOPICS[0];
+  const currentTopic = TOPICS.find((t) => t.id === topic)!;
   const records = useMemo(() => RECORDS.filter((r) => r.topic === topic), [topic]);
-  const [question, setQuestion] = useState(TOPICS[0]?.question ?? "");
+  const firstRecord = records[0] ?? RECORDS[0]!;
+  const firstEvidence = firstRecord.evidence[0]!;
+  const [question, setQuestion] = useState(TOPICS[0]!.question);
   const investigate = (q: string, to: "/app/discover" | "/app/story-dna" = "/app/discover") => {
-    setFilters(emptyFilters); runSearch(q); navigate({ to });
+    setFilters(emptyFilters);
+    runSearch(q);
+    navigate({ to });
   };
   return (
-    <div className="min-h-screen">
-      <header className="mx-auto flex max-w-[1400px] items-center justify-between border-b border-foreground px-5 py-5 md:px-10">
+    <div className="landing">
+      <header className="landing-nav">
         <Wordmark />
-        <nav aria-label="Main" className="flex items-center gap-6 text-sm">
-          <a href="#investigation" className="hidden underline sm:block">Example investigation</a>
-          <Button asChild variant="outline" size="sm"><Link to="/app">Open workspace</Link></Button>
+        <nav aria-label="Main" className="flex items-center gap-7 text-xs font-semibold">
+          <a
+            href="#story-dna"
+            className="hidden text-muted-foreground hover:text-foreground sm:block"
+          >
+            The product
+          </a>
+          <a
+            href="#investigation"
+            className="hidden text-muted-foreground hover:text-foreground md:block"
+          >
+            Explore a story
+          </a>
+          <Button asChild variant="outline" className="rounded-full text-xs">
+            <Link to="/app">
+              Enter workspace <span aria-hidden="true">↗</span>
+            </Link>
+          </Button>
         </nav>
       </header>
       <main>
-        <section className="mx-auto grid max-w-[1400px] gap-10 px-5 pb-12 pt-10 md:px-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16 lg:pb-14 lg:pt-16">
+        <section className="landing-hero">
+          <div className="hero-copy">
+            <p className="eyebrow flex items-center gap-3">
+              <span className="h-1.5 w-1.5 bg-primary" />A new lens on social video
+            </p>
+            <h1>
+              Look closer.
+              <br />
+              <span className="hero-muted">Find the</span>
+              <br />
+              <span className="text-primary">story.</span>
+            </h1>
+            <p className="hero-description">
+              The most interesting story is rarely in one video. Connect the conversations. Follow
+              the evidence. Find your angle.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-5">
+              <Button asChild size="lg" className="h-12 rounded-full px-7 font-bold">
+                <Link to="/app">
+                  Start investigating <span aria-hidden="true">↗</span>
+                </Link>
+              </Button>
+              <a href="#story-dna" className="text-xs font-semibold underline underline-offset-4">
+                Explore Story DNA
+              </a>
+            </div>
+            <div className="hero-demo">
+              <DemoBadge />
+              <span>
+                Explore 45 fictional video records.
+                <br />
+                Live retrieval comes later.
+              </span>
+            </div>
+          </div>
+          <div
+            className="hero-stage"
+            aria-label="Illustrated preview of the student housing investigation"
+          >
+            <div className="stage-top">
+              <span>INVESTIGATION 001</span>
+              <span>FR / STUDENT HOUSING</span>
+            </div>
+            <div className="stage-cross stage-cross-a" aria-hidden="true">
+              +
+            </div>
+            <div className="stage-cross stage-cross-b" aria-hidden="true">
+              +
+            </div>
+            <div className="stage-caption">
+              <span className="stage-dot" />
+              One question. Multiple perspectives.
+            </div>
+            <button
+              className="story-poster poster-back"
+              type="button"
+              onClick={() => openRecord("HOU-002")}
+              aria-label="Inspect fictional housing record HOU-002"
+            >
+              <TopicArt topic="employment" className="h-full w-full" />
+              <span className="poster-kicker">THE OTHER SIDE</span>
+              <span className="poster-label">
+                The guarantor
+                <br />
+                barrier.
+              </span>
+            </button>
+            <button
+              className="story-poster poster-front"
+              type="button"
+              onClick={() => openRecord("HOU-001")}
+              aria-label="Inspect fictional housing record HOU-001"
+            >
+              <TopicArt topic="housing" className="h-full w-full" />
+              <span className="poster-kicker">STUDENT HOUSING / 01</span>
+              <span className="poster-label">
+                A room.
+                <br />
+                At what cost?
+              </span>
+              <span className="poster-foot">
+                Illustrated fictional record{" "}
+                <span>{formatTime(RECORDS.find((r) => r.id === "HOU-001")!.durationSeconds)}</span>
+              </span>
+            </button>
+            <div className="stage-tag tag-top">
+              <span className="stage-dot" />
+              Rent burden{" "}
+              <span className="tag-count">
+                {RECORDS.filter((r) => r.themes.includes("rent-burden")).length} records
+              </span>
+            </div>
+            <div className="stage-tag tag-bottom">
+              <span className="connection-glyph" aria-hidden="true">
+                ⌘
+              </span>
+              <div>
+                <strong>Follow the connection</strong>
+                <span>From a personal story to a shared theme.</span>
+              </div>
+            </div>
+            <svg className="stage-connector" viewBox="0 0 600 600" fill="none" aria-hidden="true">
+              <path d="M440 140H525V265H475M90 390H35V510H210" stroke="#ff8a54" strokeWidth="1" />
+              <circle cx="440" cy="140" r="4" fill="#ff8a54" />
+              <circle cx="210" cy="510" r="4" fill="#ff8a54" />
+            </svg>
+            <div className="stage-bottom">
+              <span>ILLUSTRATIONS, NOT SOURCE FOOTAGE</span>
+              <span>01 / 05</span>
+            </div>
+          </div>
+        </section>
+        <div className="product-strip">
+          <span>
+            Built for curious minds.
+            <br />
+            <strong>Designed for the newsroom.</strong>
+          </span>
+          <p>Discover conversations.</p>
+          <span className="strip-divider" />
+          <p>Connect perspectives.</p>
+          <span className="strip-divider" />
+          <p>Trace every insight.</p>
+        </div>
+
+        <section id="investigation" className="investigation-section">
           <div>
-            <p className="eyebrow">Research across social video</p>
-            <h1 className="mt-6 max-w-lg font-display text-5xl leading-[1.06] md:text-6xl">Find the story<br className="hidden md:block" /> between the stories.</h1>
-            <p className="mt-6 max-w-md text-lg leading-relaxed text-muted-foreground">{description}</p>
-            <Button asChild className="mt-8" size="lg"><Link to="/app">Open workspace</Link></Button>
-            <div className="mt-10 flex flex-wrap items-center gap-3 border-t border-border pt-4 text-xs text-muted-foreground"><DemoBadge /><span>45 fictional records. No live video retrieval.</span></div>
+            <p className="eyebrow text-primary">01 / Your starting point</p>
+            <h2>
+              A good story starts
+              <br />
+              with a better question.
+            </h2>
           </div>
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-y border-border py-3">
-              <p className="eyebrow">Research diagram / 01</p>
-              <span className="text-xs text-muted-foreground">Student housing · fictional records</span>
+          <div className="investigation-search">
+            <form
+              role="search"
+              onSubmit={(e) => {
+                e.preventDefault();
+                investigate(question);
+              }}
+            >
+              <label htmlFor="example-question" className="sr-only">
+                Example research question
+              </label>
+              <input
+                id="example-question"
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)}
+              />
+              <button type="submit" aria-label="Investigate this question">
+                ↗
+              </button>
+            </form>
+            <div className="flex flex-wrap gap-2 pt-4">
+              {TOPICS.map((t) => (
+                <button
+                  type="button"
+                  key={t.id}
+                  onClick={() => setQuestion(t.question)}
+                  className={`topic-pill ${question === t.question ? "is-active" : ""}`}
+                >
+                  {t.label}
+                </button>
+              ))}
             </div>
-            <div className="h-[300px] md:h-[350px] lg:h-[390px]">
-              {hydrated && <Suspense fallback={<p className="p-6 text-sm">Loading diagram…</p>}><StoryGraph question={TOPICS[0]?.question ?? "Student housing"} records={RECORDS.filter((r) => r.topic === "housing")} selectedId={selected} savedIds={saved} onSelect={(id, kind, ref) => { setSelected(id); if (kind === "video") openRecord(ref); }} /></Suspense>}
-            </div>
-            <Button variant="editorial" onClick={() => investigate(TOPICS[0]?.question ?? "housing", "/app/story-dna")} className="mt-3 text-sm underline">Open this investigation</Button>
+            <p className="mt-4 text-[10px] text-muted-foreground">
+              Search the demonstration collection. No account required.
+            </p>
           </div>
         </section>
 
-        <section id="investigation" className="border-y border-foreground">
-          <div className="mx-auto grid max-w-[1400px] gap-8 px-5 py-10 md:px-10 lg:grid-cols-[1fr_2fr] lg:gap-16">
-            <div><p className="eyebrow">01 / Begin the investigation</p><h2 className="mt-3 font-display text-3xl">Ask a research question.</h2><p className="mt-3 text-sm text-muted-foreground">Search the titles, passages and themes in the demonstration collection.</p></div>
+        <section id="story-dna" className="dna-section">
+          <div className="section-heading">
             <div>
-              <form role="search" onSubmit={(e) => { e.preventDefault(); investigate(question); }} className="flex flex-col gap-3 sm:flex-row">
-                <label htmlFor="example-question" className="sr-only">Example research question</label>
-                <input id="example-question" value={question} onChange={(e) => setQuestion(e.target.value)} className="min-w-0 flex-1 border border-input bg-card px-4 py-3 text-base outline-none focus:border-primary" />
-                <Button type="submit" className="h-auto px-6 py-3">Investigate</Button>
-              </form>
-              <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2">{TOPICS.map((t) => <Button key={t.id} variant="editorial" onClick={() => setQuestion(t.question)} className="text-xs underline">{t.label}</Button>)}</div>
+              <p className="eyebrow text-primary">02 / The bigger picture</p>
+              <h2>
+                Separate videos.
+                <br />
+                <span className="text-muted-foreground">Connected stories.</span>
+              </h2>
+            </div>
+            <div className="max-w-xs">
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Story DNA maps the themes and viewpoints inside your investigation. Pick a
+                connection to explore its evidence.
+              </p>
+              <Button
+                variant="editorial"
+                onClick={() => investigate(currentTopic.question, "/app/story-dna")}
+                className="mt-5 text-xs font-bold text-primary"
+              >
+                Open full investigation ↗
+              </Button>
+            </div>
+          </div>
+          <div className="dna-window">
+            <div className="dna-toolbar">
+              <div className="flex items-center gap-2">
+                <span className="stage-dot" />
+                <strong>Story DNA</strong>
+                <span className="hidden text-muted-foreground sm:inline">
+                  / {currentTopic.label}
+                </span>
+              </div>
+              <span className="text-muted-foreground">{records.length} demo records</span>
+            </div>
+            <div role="tablist" aria-label="Preview topic" className="dna-tabs">
+              {TOPICS.map((t) => (
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={topic === t.id}
+                  key={t.id}
+                  onClick={() => {
+                    setTopic(t.id);
+                    setSelected(null);
+                  }}
+                  className={topic === t.id ? "is-active" : ""}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+            <div className="dna-canvas">
+              {hydrated && (
+                <Suspense fallback={<p className="p-6 text-sm">Loading diagram…</p>}>
+                  <StoryGraph
+                    key={topic}
+                    question={currentTopic.question}
+                    records={records}
+                    selectedId={selected}
+                    savedIds={saved}
+                    onSelect={(id, kind, ref) => {
+                      setSelected(id);
+                      if (kind === "video") openRecord(ref);
+                    }}
+                  />
+                </Suspense>
+              )}
+            </div>
+            <div className="dna-footer">
+              <span>
+                <i className="legend-square" />
+                Theme <i className="legend-ring" />
+                Perspective
+              </span>
+              <span>Connections come from fictional record fields.</span>
             </div>
           </div>
         </section>
 
-        <section className="mx-auto max-w-[1400px] px-5 py-12 md:px-10">
-          <div className="grid gap-8 lg:grid-cols-[1fr_2fr] lg:gap-16">
-            <div><p className="eyebrow">02 / Follow the connections</p><h2 className="mt-3 font-display text-3xl">Explore the connected themes.</h2><p className="mt-3 text-sm text-muted-foreground">The same question can lead to different accounts. Story DNA connects the themes and perspectives recorded in each source.</p></div>
-            <div className="min-w-0">
-              <div role="tablist" aria-label="Preview topic" className="flex flex-wrap gap-x-5 gap-y-2 border-b border-border pb-3">{TOPICS.map((t) => <Button variant="editorial" key={t.id} role="tab" aria-selected={topic === t.id} onClick={() => { setTopic(t.id); setSelected(null); }} className={`border-b-2 pb-1 text-sm ${topic === t.id ? "border-primary font-semibold text-primary" : "border-transparent text-muted-foreground"}`}>{t.label}</Button>)}</div>
-              <div className="h-[320px] md:h-[420px]">{hydrated && <Suspense fallback={<p className="p-6 text-sm">Loading diagram…</p>}><StoryGraph key={topic} question={currentTopic?.question ?? ""} records={records} selectedId={selected} savedIds={saved} onSelect={(id, kind, ref) => { setSelected(id); if (kind === "video") openRecord(ref); }} /></Suspense>}</div>
-              <p className="mt-3 text-xs text-muted-foreground">{records.length} fictional records on this topic. Connections describe record fields, not causality.</p>
+        <section className="evidence-section">
+          <div className="evidence-copy">
+            <p className="eyebrow">03 / Keep the receipts</p>
+            <h2>
+              An insight is only
+              <br />
+              as strong as
+              <br />
+              its evidence.
+            </h2>
+            <p>
+              Go straight to the passage behind a theme. Inspect the context, collect what matters,
+              and keep every reference within reach.
+            </p>
+            <button type="button" onClick={() => openRecord(firstRecord.id)} className="ink-button">
+              Inspect a record <span>↗</span>
+            </button>
+            <span className="evidence-disclaimer">Fictional example. No source footage.</span>
+          </div>
+          <div className="evidence-specimen">
+            <div className="specimen-top">
+              <span>EVIDENCE / {firstRecord.id}</span>
+              <span>{firstRecord.platform}</span>
+            </div>
+            <div className="specimen-art">
+              <TopicArt topic={topic} className="h-full w-full" />
+              <span>ILLUSTRATION</span>
+            </div>
+            <div className="specimen-quote">
+              <span>
+                {formatTime(firstEvidence.startSeconds)} · {firstEvidence.modality}
+              </span>
+              <blockquote>{firstEvidence.excerpt}</blockquote>
+              <SaveButton id={firstRecord.id} />
             </div>
           </div>
         </section>
 
-        <section className="border-y border-border bg-card">
-          <div className="mx-auto grid max-w-[1400px] gap-10 px-5 py-12 md:px-10 lg:grid-cols-[1.4fr_1fr] lg:gap-20">
-            <div><p className="eyebrow">03 / Read the source</p><h2 className="mt-3 font-display text-3xl">Inspect the supporting evidence.</h2><div className="mt-6 divide-y divide-border border-t border-border">{records.slice(0, 2).map((r) => <article key={r.id} className="py-5"><p className="text-xs text-muted-foreground">{r.id} · {r.platform} · Fictional record</p><h3 className="mt-2 font-display text-2xl">{r.title}</h3>{r.evidence[0] && <blockquote className="mt-3 font-display text-xl leading-relaxed"><span className="mr-3 font-sans text-xs text-primary">{formatTime(r.evidence[0].startSeconds)}</span>{r.evidence[0].excerpt}</blockquote>}<div className="mt-4 flex items-center gap-5"><Button variant="editorial" className="text-xs underline" onClick={() => openRecord(r.id)}>Open evidence</Button><SaveButton id={r.id} /></div></article>)}</div></div>
-            <div className="lg:border-l lg:border-border lg:pl-10"><p className="eyebrow">04 / Write from the evidence</p><h2 className="mt-3 font-display text-3xl">Assemble the brief.</h2><p className="mt-4 max-w-sm font-display text-xl leading-relaxed">The brief brings together your selected passages, shared themes and contrasting perspectives, with references back to each record.</p><p className="mt-4 text-sm text-muted-foreground">Questions requiring independent verification remain separate from the evidence.</p><dl className="mt-8 border-y border-border py-4"><div className="flex justify-between text-sm"><dt>Your saved evidence</dt><dd className="font-semibold">{saved.length} records</dd></div></dl><Button asChild variant="outline" className="mt-6"><Link to="/app/brief">Open editorial brief</Link></Button></div>
+        <section className="brief-section">
+          <div>
+            <p className="eyebrow text-primary">04 / From research to direction</p>
+            <h2>
+              You found the evidence.
+              <br />
+              Now find your angle.
+            </h2>
+            <p>
+              Your saved records become a structured brief with themes, perspectives, and
+              references. You decide where the story goes next.
+            </p>
+            <Button asChild size="lg" className="mt-7 rounded-full">
+              <Link to="/app/brief">Open editorial brief ↗</Link>
+            </Button>
+          </div>
+          <div className="brief-sheet">
+            <div className="brief-sheet-top">
+              PARALLAX / EDITORIAL BRIEF<span>RESEARCH COPY</span>
+            </div>
+            <h3>
+              The student
+              <br />
+              housing question.
+            </h3>
+            <p className="brief-sheet-caption">Illustrative report structure</p>
+            <div className="brief-sheet-row">
+              <span>01</span>
+              <strong>Observed themes</strong>
+              <small>Linked to selected records</small>
+            </div>
+            <div className="brief-sheet-row">
+              <span>02</span>
+              <strong>Different perspectives</strong>
+              <small>Compare what sources express</small>
+            </div>
+            <div className="brief-sheet-row">
+              <span>03</span>
+              <strong>Questions to verify</strong>
+              <small>Keep uncertainty in view</small>
+            </div>
+            <div className="brief-sheet-bottom">
+              {saved.length} records in your evidence collection
+            </div>
           </div>
         </section>
       </main>
-      <footer className="mx-auto flex max-w-[1400px] flex-wrap items-start justify-between gap-6 px-5 py-8 md:px-10"><Wordmark /><p className="max-w-md text-xs leading-relaxed text-muted-foreground">All records, quotes and figures are fictional. No source footage is available. Demonstration briefs must not be cited as reporting.</p><Link to="/app" className="text-sm underline">Open workspace</Link></footer>
+      <footer className="landing-footer">
+        <Wordmark />
+        <p>
+          Independent thinking.
+          <br />
+          Connected evidence.
+        </p>
+        <span>
+          Prototype / All records are fictional.
+          <br />
+          No live retrieval is connected.
+        </span>
+        <Link to="/app" className="text-xs font-semibold">
+          Open workspace ↗
+        </Link>
+      </footer>
       <EvidencePanel />
     </div>
   );

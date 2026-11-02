@@ -1,32 +1,29 @@
-import { useEffect, useState } from "react";
-import { provider } from "./provider";
+import { useQuery } from "@tanstack/react-query";
+import { providerIdentity, useSearchProvider } from "./provider-context";
 import { useStore } from "./store";
 import type { SearchResult } from "./types";
 
-/** Runs the current query + filters through the SearchProvider. */
+const EMPTY_RESULTS: SearchResult[] = [];
+
 export function useResults() {
-  const { query, filters } = useStore();
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    let alive = true;
-    setStatus("loading");
-    provider
-      .search(query, filters)
-      .then((r) => {
-        if (!alive) return;
-        setResults(r);
-        setStatus("ready");
-      })
-      .catch((e: unknown) => {
-        if (!alive) return;
-        setError(e instanceof Error ? e.message : "Search failed");
-        setStatus("error");
-      });
-    return () => {
-      alive = false;
-    };
-  }, [query, filters]);
-  return { results, status, error };
+  const { query, filters, hydrated } = useStore();
+  const source = useSearchProvider();
+  const result = useQuery({
+    queryKey: ["search", providerIdentity(source), query, filters],
+    queryFn: () => source.search(query, filters),
+    enabled: hydrated,
+    retry: false,
+  });
+  return {
+    results: result.data ?? EMPTY_RESULTS,
+    status: result.isPending
+      ? ("loading" as const)
+      : result.isError
+        ? ("error" as const)
+        : ("ready" as const),
+    error: result.error?.message ?? null,
+    retry: () => {
+      void result.refetch();
+    },
+  };
 }
