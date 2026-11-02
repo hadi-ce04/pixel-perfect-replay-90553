@@ -2,4 +2,4 @@
 - [x] Apply paper-and-ink tokens, typography, quiet controls and brand.
 - [x] Recompose landing and workspace as editorial research layouts.
 - [x] Refine graph, evidence, saved collection and report consistently.
-- [ ] Verify research workflows, persistence, keyboard and desktop/mobile layouts.
+- [x] Verify research workflows, persistence, keyboard and desktop/mobile layouts.
