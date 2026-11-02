@@ -36,7 +36,6 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
             }`}
           >
             <span className={`h-4 w-0.5 ${active ? "bg-primary" : "bg-transparent"}`} aria-hidden />
-            <n.icon className="h-4 w-4" />
             <span className="flex-1">{n.label}</span>
             {n.to === "/app/saved" && saved.length > 0 && (
               <span className="font-mono text-[11px] text-primary">{saved.length}</span>

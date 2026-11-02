@@ -65,9 +65,9 @@ export function StoryGraph({
     // order videos by their first theme for tidier edges
     const themeOrder = byKind.theme.map((t) => t.refId);
     byKind.video.sort((a, b) => {
-      const ra = records.find((r) => r.id === a.refId)!;
-      const rb = records.find((r) => r.id === b.refId)!;
-      return themeOrder.indexOf(ra.themes[0] ?? "") - themeOrder.indexOf(rb.themes[0] ?? "");
+      const ra = records.find((r) => r.id === a.refId);
+      const rb = records.find((r) => r.id === b.refId);
+      return themeOrder.indexOf(ra?.themes[0] ?? "") - themeOrder.indexOf(rb?.themes[0] ?? "");
     });
     const gap: Record<GraphNodeKind, number> = { question: 0, theme: 80, video: 52, perspective: 90 };
     const maxH = Math.max(...(Object.keys(byKind) as GraphNodeKind[]).map((k) => byKind[k].length * gap[k]));
