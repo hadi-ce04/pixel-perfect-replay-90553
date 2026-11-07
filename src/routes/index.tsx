@@ -1,3 +1,5 @@
+import { SearchProviderBoundary } from "@/lib/provider-context";
+import { mockProvider } from "@/lib/provider";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { lazy, Suspense, useMemo, useState } from "react";
 import { DemoBadge, Wordmark } from "@/components/parallax/Brand";
@@ -27,7 +29,11 @@ export const Route = createFileRoute("/")({
       { property: "og:type", content: "website" },
     ],
   }),
-  component: Landing,
+  component: () => (
+    <SearchProviderBoundary source={mockProvider}>
+      <Landing />
+    </SearchProviderBoundary>
+  ),
 });
 
 function Landing() {

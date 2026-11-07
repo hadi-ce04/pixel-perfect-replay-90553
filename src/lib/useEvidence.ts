@@ -11,6 +11,7 @@ export function useEvidenceRecord(id: string | null) {
     queryFn: () => source.getById(id!),
     enabled: id !== null,
     retry: false,
+    staleTime: 60000,
   });
 }
 
@@ -28,6 +29,7 @@ export function useEvidenceCollection(ids: string[], enabled = true) {
     },
     enabled,
     retry: false,
+    staleTime: 60000,
   });
   const records = result.data ?? EMPTY_RECORDS;
   const receivedIds = new Set(records.map((record) => record.id));

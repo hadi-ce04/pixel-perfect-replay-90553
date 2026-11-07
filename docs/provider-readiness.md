@@ -1,6 +1,6 @@
 # Provider integration and verification
 
-The default adapter is still `MockProvider`. No Oriane endpoints or credentials have been added.
+The workspace now supports `OrianeProvider` with server-side credentials. See [live-oriane.md](live-oriane.md) for current configuration and validation. The notes below describe the original provider-boundary checks.
 
 ## Installing a future adapter
 

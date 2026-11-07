@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -10,12 +10,28 @@ import {
 import { perspectiveOf, themeOf, topicOf } from "@/data/catalog";
 import { useEvidenceRecord } from "@/lib/useEvidence";
 import { useStore } from "@/lib/store";
-import { formatDate, formatTime } from "@/lib/format";
+import { formatDate, formatTime, formatTimeRange } from "@/lib/format";
 import { SaveButton } from "./SaveButton";
+import { Highlight } from "./Highlight";
+
+import { planQuery, searchableFacets } from "@/lib/query-plan";
+import { findTerm } from "@/lib/text";
 
 export function EvidencePanel() {
-  const { openId, closeRecord } = useStore();
+  const { openId, closeRecord, query } = useStore();
   const { data: record, isPending, isError, refetch } = useEvidenceRecord(openId);
+  const live = record?.dataMode === "live";
+  // Question terms are matched against this record's own passages only.
+  const facetHits = useMemo(() => {
+    if (!record || record.dataMode !== "live") return [];
+    const plan = planQuery(query);
+    return searchableFacets(plan).map((f) => ({
+      facet: f,
+      passages: record.evidence.filter((e) => findTerm(e.excerpt, f.terms)).length,
+      caption: !!findTerm(record.description, f.terms),
+    }));
+  }, [record, query]);
+  const highlightTerms = facetHits.flatMap((h) => h.facet.terms);
   const [active, setActive] = useState<number | null>(null);
   useEffect(() => setActive(null), [openId]);
 
@@ -81,7 +97,7 @@ export function EvidencePanel() {
                   ["Published", formatDate(record.publishedAt)],
                   ["Duration", formatTime(record.durationSeconds)],
                   ["Content type", record.contentType],
-                  ["Topic", topicOf(record.topic).label],
+                  ["Topic", live ? "Not classified" : topicOf(record.topic).label],
                 ].map(([k, v]) => (
                   <div key={k}>
                     <dt className="eyebrow">{k}</dt>
@@ -90,8 +106,20 @@ export function EvidencePanel() {
                 ))}
               </dl>
 
+              {record.dataMode === "live" && (
+                <p className="border border-border p-3 text-xs text-muted-foreground">
+                  Highlighted words are terms from your current question found in this source's own
+                  text. Speaker perspective and editorial content type have not been classified.
+                  Media item numbers identify separate items in the source post.
+                </p>
+              )}
               <section>
                 <h3 className="eyebrow mb-3">Evidence excerpts</h3>
+                {record.evidence.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    No transcript or on-screen text was supplied for this record.
+                  </p>
+                )}
                 <p className="mb-3 text-xs text-muted-foreground">
                   {record.dataMode === "mock"
                     ? "Timestamped passages from the fictional record."
@@ -113,14 +141,23 @@ export function EvidencePanel() {
                       >
                         <div className="mb-1.5 flex items-center gap-2 text-xs">
                           <span className="font-mono text-primary">
-                            {formatTime(e.startSeconds)}–{formatTime(e.endSeconds)}
+                            {formatTimeRange(e.startSeconds, e.endSeconds)}
                           </span>
                           <span className="rounded-sm bg-muted px-1.5 py-0.5 text-muted-foreground">
                             {e.modality}
                           </span>
+                          {(record.sourceMediaCount ?? 0) > 1 && (
+                            <span>Media item {(e.mediaIndex ?? 0) + 1}</span>
+                          )}
                         </div>
                         <p className="font-display text-xl leading-relaxed">
-                          {e.modality === "visual" ? e.excerpt : `“${e.excerpt}”`}
+                          {e.modality === "visual" ? (
+                            e.excerpt
+                          ) : (
+                            <>
+                              “<Highlight text={e.excerpt} terms={highlightTerms} />”
+                            </>
+                          )}
                         </p>
                       </Button>
                     </li>
@@ -128,17 +165,47 @@ export function EvidencePanel() {
                 </ol>
               </section>
 
-              <section>
-                <h3 className="eyebrow mb-2">Themes</h3>
-                <ul className="space-y-2">
-                  {record.themes.map((t) => (
-                    <li key={t} className="text-sm">
-                      <span className="font-medium">{themeOf(t).label}</span>
-                      <span className="text-muted-foreground"> — {themeOf(t).description}</span>
-                    </li>
-                  ))}
-                </ul>
-              </section>
+              {live ? (
+                <section>
+                  <h3 className="eyebrow mb-2">Question terms in this source</h3>
+                  {facetHits.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      No search terms in the current question.
+                    </p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {facetHits.map(({ facet, passages, caption }) => (
+                        <li key={facet.key} className="text-sm">
+                          <span className="font-medium">{facet.label}</span>
+                          <span className="text-muted-foreground">
+                            {" "}
+                            —{" "}
+                            {passages
+                              ? `${passages} ${passages === 1 ? "passage" : "passages"}`
+                              : "not found in the returned passages"}
+                            {caption ? "; also in the caption" : ""}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    A matching word shows what the text contains, not what the speaker claims.
+                  </p>
+                </section>
+              ) : (
+                <section>
+                  <h3 className="eyebrow mb-2">Themes</h3>
+                  <ul className="space-y-2">
+                    {record.themes.map((t) => (
+                      <li key={t} className="text-sm">
+                        <span className="font-medium">{themeOf(t).label}</span>
+                        <span className="text-muted-foreground"> — {themeOf(t).description}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
 
               <section>
                 <h3 className="eyebrow mb-2">Perspective</h3>

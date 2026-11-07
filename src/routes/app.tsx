@@ -1,3 +1,4 @@
+import { useSearchProvider } from "@/lib/provider-context";
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
@@ -24,7 +25,8 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <nav aria-label="Workspace" className="flex flex-col gap-0.5">
       {NAV.map((n) => {
-        const active = n.to === "/app" ? path === "/app" || path === "/app/" : path.startsWith(n.to);
+        const active =
+          n.to === "/app" ? path === "/app" || path === "/app/" : path.startsWith(n.to);
         return (
           <Link
             key={n.to}
@@ -32,7 +34,9 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
             onClick={onNavigate}
             aria-current={active ? "page" : undefined}
             className={`flex items-center gap-3 rounded-sm px-3 py-2 text-sm transition-colors ${
-              active ? "bg-sidebar-accent text-foreground" : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"
+              active
+                ? "bg-sidebar-accent text-foreground"
+                : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"
             }`}
           >
             <span className={`h-4 w-0.5 ${active ? "bg-primary" : "bg-transparent"}`} aria-hidden />
@@ -48,6 +52,7 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 function AppLayout() {
+  const live = useSearchProvider().mode === "live";
   const [open, setOpen] = useState(false);
   return (
     <div className="flex min-h-screen w-full">
@@ -62,7 +67,9 @@ function AppLayout() {
         <div className="space-y-2 border-t border-sidebar-border px-2 pt-4">
           <DemoBadge />
           <p className="text-[11px] leading-relaxed text-muted-foreground">
-            45 fictional records. No live retrieval or analysis is connected.
+            {live
+              ? "Source videos from Oriane, any topic. Themes are terms found in source passages; perspectives are unclassified."
+              : "45 fictional records. No live retrieval is connected."}
           </p>
         </div>
       </aside>
@@ -72,7 +79,8 @@ function AppLayout() {
           <Wordmark to="/" />
           <div className="flex items-center gap-2">
             <DemoBadge />
-            <Button variant="outline"
+            <Button
+              variant="outline"
               type="button"
               onClick={() => setOpen((o) => !o)}
               aria-expanded={open}

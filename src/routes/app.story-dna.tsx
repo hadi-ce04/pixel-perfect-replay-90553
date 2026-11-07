@@ -1,12 +1,19 @@
 import { Button } from "@/components/ui/button";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { lazy, Suspense, useMemo, useState } from "react";
-import { perspectiveOf, themeOf } from "@/data/catalog";
+import { perspectiveOf } from "@/data/catalog";
+import { Highlight } from "@/components/parallax/Highlight";
+import { formatTimeRange } from "@/lib/format";
+import { excerptWindow } from "@/lib/text";
+import type { EvidenceTheme } from "@/lib/analysis";
 import { SaveButton } from "@/components/parallax/SaveButton";
 import { buildStoryGraph, type GraphNodeKind } from "@/lib/graph";
 import { useStore } from "@/lib/store";
 import { useResults } from "@/lib/useResults";
 import { useHydrated } from "@/lib/useHydrated";
+import { StoryTensions } from "@/components/parallax/StoryTensions";
+import { useSearchProvider } from "@/lib/provider-context";
+import { comparisonThemes } from "@/lib/tensions";
 
 const StoryGraph = lazy(() =>
   import("@/components/parallax/StoryGraph").then((m) => ({ default: m.StoryGraph })),
@@ -34,12 +41,14 @@ export const Route = createFileRoute("/app/story-dna")({
 
 function StoryDNA() {
   const { query, saved, openRecord } = useStore();
-  const { results, status, retry } = useResults();
+  const { results, status, retry, info, analysis } = useResults();
+  const live = useSearchProvider().mode === "live";
   const records = useMemo(() => results.map((r) => r.record), [results]);
-  const [view, setView] = useState<"graph" | "list">("graph");
+  const [view, setView] = useState<"graph" | "list" | "tensions">("graph");
+  const navigate = useNavigate();
   const [sel, setSel] = useState<{ id: string; kind: GraphNodeKind; ref: string } | null>(null);
   const hydrated = useHydrated();
-  const g = useMemo(() => buildStoryGraph(query, records), [query, records]);
+  const g = useMemo(() => buildStoryGraph(query, records, analysis), [query, records, analysis]);
 
   const onSelect = (id: string, kind: GraphNodeKind, ref: string) => {
     setSel({ id, kind, ref });
@@ -48,7 +57,7 @@ function StoryDNA() {
 
   const panelRecords =
     sel?.kind === "theme"
-      ? records.filter((r) => r.themes.includes(sel.ref))
+      ? records.filter((r) => analysis.byId[sel.ref]?.recordIds.includes(r.id))
       : sel?.kind === "perspective"
         ? records.filter((r) => r.perspective === sel.ref)
         : [];
@@ -57,18 +66,28 @@ function StoryDNA() {
     <div className="flex min-h-screen flex-col">
       <div className="border-b border-border px-5 py-8 md:px-10">
         <p className="eyebrow">Workspace · Story DNA</p>
+        {live && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            Live source evidence. Themes are terms from your question and phrases that recur across
+            records, each linked to the exact passages that contain them. A shared term is not a
+            shared claim, and no speaker identity or stance is inferred. {info?.partial && "Oriane returned a partial response."}{" "}
+            Only the current search page is represented.
+          </p>
+        )}
         <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="max-w-3xl font-display text-3xl leading-tight md:text-5xl">
+            <h1
+              className={`max-w-3xl font-display leading-tight ${view === "tensions" ? "text-2xl md:text-3xl" : "text-3xl md:text-5xl"}`}
+            >
               {query || "All demonstration records"}
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              {records.length} fictional records · {g.themeCounts.size} themes ·{" "}
-              {g.perspCounts.size} perspectives
+              {records.length} {live ? "source" : "fictional"} records · {g.themeCounts.size} themes
+              · {g.perspCounts.size} perspective labels
             </p>
           </div>
           <div role="tablist" aria-label="View" className="flex border border-border">
-            {(["graph", "list"] as const).map((v) => (
+            {(["graph", "list", "tensions"] as const).map((v) => (
               <Button
                 variant="editorial"
                 key={v}
@@ -76,37 +95,56 @@ function StoryDNA() {
                 aria-selected={view === v}
                 type="button"
                 onClick={() => setView(v)}
-                className={`px-4 py-1.5 text-xs capitalize ${view === v ? "bg-foreground text-background" : "text-muted-foreground"}`}
+                className={`px-4 py-1.5 text-xs capitalize ${view === v ? "bg-foreground text-background hover:text-background" : "text-muted-foreground"}`}
               >
-                {v}
+                {v === "tensions" ? "Story Tensions" : v}
               </Button>
             ))}
           </div>
         </div>
-        <ul className="mt-4 flex flex-wrap gap-4 text-xs text-muted-foreground" aria-label="Legend">
-          <li className="flex items-center gap-2">
-            <span className="h-3 w-3 border-2 border-foreground" />
-            Research question
-          </li>
-          <li className="flex items-center gap-2">
-            <span className="h-3 w-3 border border-foreground" />
-            Theme (count = records)
-          </li>
-          <li className="flex items-center gap-2">
-            <span className="h-3 w-3 border border-border bg-background" />
-            Video record
-          </li>
-          <li className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full border border-dashed border-foreground" />
-            Perspective
-          </li>
-          <li className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            Saved
-          </li>
-        </ul>
+        {view !== "tensions" && (
+          <ul
+            className="mt-4 flex flex-wrap gap-4 text-xs text-muted-foreground"
+            aria-label="Legend"
+          >
+            <li className="flex items-center gap-2">
+              <span className="h-3 w-3 border-2 border-foreground" />
+              Research question
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="h-3 w-3 border border-foreground" />
+              Theme (count = records)
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="h-3 w-3 border border-border bg-background" />
+              Video record
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="h-3 w-3 rounded-full border border-dashed border-foreground" />
+              Perspective
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+              Saved
+            </li>
+          </ul>
+        )}
       </div>
 
+      {status === "ready" && records.length > 0 && view !== "tensions" && (
+        <div className="tensions-entry">
+          <div>
+            <span className="eyebrow text-primary">A different angle</span>
+            <p>What do two accounts reveal together?</p>
+            <span>
+              Compare excerpts, inspect their context, and find your next reporting question.
+            </span>
+          </div>
+          <Button variant="outline" onClick={() => setView("tensions")}>
+            Explore Story Tensions ↗
+          </Button>
+        </div>
+      )}
       {status === "error" ? (
         <div role="alert" className="p-10">
           <h2 className="font-display text-2xl">Could not load Story DNA</h2>
@@ -130,6 +168,20 @@ function StoryDNA() {
             Adjust search in Discover →
           </Link>
         </div>
+      ) : view === "tensions" ? (
+        status === "loading" ? (
+          <p role="status" className="p-8 text-sm text-muted-foreground">
+            Loading comparison evidence…
+          </p>
+        ) : (
+          <StoryTensions
+            key={`${query}:${sel?.kind === "theme" ? sel.ref : ""}:${records.map((r) => r.id).join(",")}`}
+            records={records}
+            analysis={analysis}
+            initialThemeId={sel?.kind === "theme" ? sel.ref : undefined}
+            onOpenBrief={() => navigate({ to: "/app/brief" })}
+          />
+        )
       ) : view === "graph" ? (
         <div className="grid lg:grid-cols-[1fr_280px]">
           <div className="relative h-[560px] lg:h-[660px]">
@@ -140,6 +192,7 @@ function StoryDNA() {
                 <StoryGraph
                   question={query}
                   records={records}
+                  analysis={analysis}
                   selectedId={sel?.id ?? null}
                   savedIds={saved}
                   onSelect={onSelect}
@@ -162,13 +215,24 @@ function StoryDNA() {
               <div>
                 <p className="eyebrow">{sel.kind}</p>
                 <h2 className="mt-1 font-display text-3xl">
-                  {sel.kind === "theme" ? themeOf(sel.ref).label : perspectiveOf(sel.ref).label}
+                  {sel.kind === "theme"
+                    ? (analysis.byId[sel.ref]?.label ?? sel.ref)
+                    : perspectiveOf(sel.ref).label}
                 </h2>
                 <p className="mt-2 text-sm text-muted-foreground">
                   {sel.kind === "theme"
-                    ? themeOf(sel.ref).description
+                    ? (analysis.byId[sel.ref]?.description ?? "")
                     : perspectiveOf(sel.ref).description}
                 </p>
+                {sel.kind === "theme" && comparisonThemes(panelRecords, analysis).includes(sel.ref) && (
+                  <Button
+                    variant="outline"
+                    className="mt-5 w-full text-xs"
+                    onClick={() => setView("tensions")}
+                  >
+                    Compare this theme ↗
+                  </Button>
+                )}
                 <h3 className="eyebrow mb-2 mt-6">Associated evidence · {panelRecords.length}</h3>
                 <ul className="divide-y divide-border">
                   {panelRecords.map((r) => (
@@ -181,6 +245,9 @@ function StoryDNA() {
                       >
                         {r.title}
                       </Button>
+                      {sel.kind === "theme" && analysis.byId[sel.ref] && (
+                        <SupportQuote theme={analysis.byId[sel.ref]!} recordId={r.id} />
+                      )}
                       <div className="mt-2 flex items-center justify-between">
                         <span className="font-mono text-[11px] text-muted-foreground">
                           {r.id} · {r.platform}
@@ -201,15 +268,16 @@ function StoryDNA() {
             {[...g.themeCounts].map(([t, n]) => (
               <section key={t} className="border-t border-border pt-4">
                 <h3 className="font-display text-2xl">
-                  {themeOf(t).label}{" "}
+                  {analysis.byId[t]?.label ?? t}{" "}
                   <span className="font-mono text-sm text-muted-foreground">{n}</span>
                 </h3>
-                <p className="text-sm text-muted-foreground">{themeOf(t).description}</p>
-                <ul className="mt-3 space-y-1.5">
+                <p className="text-sm text-muted-foreground">{analysis.byId[t]?.description}</p>
+                <ul className="mt-3 space-y-3">
                   {records
-                    .filter((r) => r.themes.includes(t))
+                    .filter((r) => analysis.byId[t]?.recordIds.includes(r.id))
                     .map((r) => (
-                      <li key={r.id} className="flex flex-wrap items-center gap-3 text-sm">
+                      <li key={r.id} className="text-sm">
+                        <div className="flex flex-wrap items-center gap-3">
                         <Button
                           variant="editorial"
                           type="button"
@@ -222,6 +290,8 @@ function StoryDNA() {
                           {r.id} · perspective: {perspectiveOf(r.perspective).label}
                         </span>
                         <SaveButton id={r.id} compact />
+                        </div>
+                        {analysis.byId[t] && <SupportQuote theme={analysis.byId[t]!} recordId={r.id} />}
                       </li>
                     ))}
                 </ul>
@@ -240,5 +310,21 @@ function StoryDNA() {
         </div>
       )}
     </div>
+  );
+}
+
+/** The first exact passage in a record that supports a theme, with its timing. */
+function SupportQuote({ theme, recordId }: { theme: EvidenceTheme; recordId: string }) {
+  const ref = theme.supports.find((s) => s.recordId === recordId && s.field !== "record");
+  if (!ref) return null;
+  const shown = excerptWindow(ref.excerpt, ref.match, 280);
+  return (
+    <blockquote className="mt-2 border-l-2 border-primary pl-3 text-xs leading-relaxed text-foreground/85">
+      <span className="mb-0.5 block text-[10px] uppercase tracking-wider text-muted-foreground">
+        {ref.modality} · {formatTimeRange(ref.startSeconds, ref.endSeconds)}
+      </span>
+      “<Highlight text={shown.text} terms={theme.terms} />”
+      {shown.shortened && <span className="ml-1 text-[10px] text-muted-foreground">(shortened)</span>}
+    </blockquote>
   );
 }

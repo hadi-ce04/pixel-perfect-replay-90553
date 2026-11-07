@@ -1,3 +1,4 @@
+import { useSearchProvider } from "@/lib/provider-context";
 import { Link } from "@tanstack/react-router";
 
 export function BrandMark({ className = "h-7 w-7" }: { className?: string }) {
@@ -23,12 +24,13 @@ export function Wordmark({ to = "/" }: { to?: "/" | "/app" }) {
   );
 }
 export function DemoBadge({ className = "" }: { className?: string }) {
+  const live = useSearchProvider().mode === "live";
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-[10px] font-semibold tracking-wide text-muted-foreground ${className}`}
     >
       <span className="h-1 w-1 rounded-full bg-primary" />
-      Demo data
+      {live ? "Live Oriane" : "Demo data"}
     </span>
   );
 }

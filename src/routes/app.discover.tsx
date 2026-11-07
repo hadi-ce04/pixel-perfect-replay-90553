@@ -1,3 +1,4 @@
+import { useSearchProvider } from "@/lib/provider-context";
 import { Button } from "@/components/ui/button";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { X } from "lucide-react";
@@ -5,6 +6,7 @@ import { useState } from "react";
 import { TOPICS, topicOf } from "@/data/catalog";
 import { ResultCard } from "@/components/parallax/ResultCard";
 import { SearchBar } from "@/components/parallax/SearchBar";
+import { QueryInterpretation } from "@/components/parallax/QueryInterpretation";
 import { useStore } from "@/lib/store";
 import { useResults } from "@/lib/useResults";
 import {
@@ -22,13 +24,13 @@ export const Route = createFileRoute("/app/discover")({
       {
         name: "description",
         content:
-          "Search fictional demonstration video records by question, topic, platform and date.",
+          "Search video records by research question, platform and date.",
       },
       { property: "og:title", content: "Discover — PARALLAX workspace" },
       {
         property: "og:description",
         content:
-          "Search fictional demonstration video records by question, topic, platform and date.",
+          "Search video records by research question, platform and date.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -37,7 +39,7 @@ export const Route = createFileRoute("/app/discover")({
   component: Discover,
 });
 
-const PLATFORMS: Platform[] = ["TikTok", "Instagram"];
+const PLATFORMS: Platform[] = ["TikTok", "Instagram", "YouTube"];
 const TYPES: ContentType[] = ["Testimonial", "Street interview", "Explainer", "Vlog", "Commentary"];
 
 function toggle<T>(arr: T[], v: T) {
@@ -67,9 +69,12 @@ function Chip({
 }
 
 function Discover() {
+  const source = useSearchProvider();
+  const live = source.mode === "live";
   const [showFilters, setShowFilters] = useState(false);
   const { query, filters, setFilters, runSearch } = useStore();
-  const { results, status, error, retry } = useResults();
+  const { results, status, error, retry, info, analysis } = useResults();
+  const searchTermCount = info ? info.plan.facets.filter((f) => f.role !== "context").length : undefined;
   const set = (f: Partial<SearchFilters>) => setFilters({ ...filters, ...f });
 
   const active: { label: string; clear: () => void }[] = [
@@ -77,7 +82,7 @@ function Discover() {
       label: p,
       clear: () => set({ platforms: filters.platforms.filter((x) => x !== p) }),
     })),
-    ...filters.topics.map((t) => ({
+    ...(live ? [] : filters.topics).map((t) => ({
       label: topicOf(t).label,
       clear: () => set({ topics: filters.topics.filter((x) => x !== t) }),
     })),
@@ -108,6 +113,12 @@ function Discover() {
         {active.length > 0 ? ` (${active.length})` : ""}
       </Button>
 
+      {live && (
+        <QueryInterpretation
+          info={status === "ready" ? info : null}
+          unmatchedFacets={status === "ready" ? analysis.unmatchedFacets : []}
+        />
+      )}
       <div className="mt-8 grid gap-8 lg:grid-cols-[220px_1fr]">
         <aside
           id="research-filters"
@@ -128,6 +139,7 @@ function Discover() {
               ))}
             </div>
           </fieldset>
+          {!live && (
           <fieldset>
             <legend className="eyebrow mb-2">Topic</legend>
             <div className="flex flex-wrap gap-1.5">
@@ -142,8 +154,14 @@ function Discover() {
               ))}
             </div>
           </fieldset>
-          <fieldset>
+          )}
+          <fieldset disabled={live}>
             <legend className="eyebrow mb-2">Content type</legend>
+            {live && (
+              <p className="mb-2 text-xs text-muted-foreground">
+                Not classified for live results. Clear these filters to search Oriane.
+              </p>
+            )}
             <div className="flex flex-wrap gap-1.5">
               {TYPES.map((c) => (
                 <Chip
@@ -186,7 +204,7 @@ function Discover() {
                 {status === "ready" ? results.length : "…"}
               </span>{" "}
               <span className="text-muted-foreground">
-                demonstration {results.length === 1 ? "record" : "records"}{" "}
+                {live ? "source" : "demonstration"} {results.length === 1 ? "record" : "records"}{" "}
                 {query ? <>for “{query}”</> : "(no query — showing all)"}
               </span>
             </p>
@@ -238,8 +256,9 @@ function Discover() {
             <div className="border border-dashed border-border p-10 text-center">
               <h2 className="font-display text-2xl">No records match</h2>
               <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-                The demonstration dataset covers housing, groceries, transport, youth employment and
-                climate. Try broader words or remove filters.
+                {live
+                  ? "No returned source matches these search terms. Try fewer terms, a different spelling, the other language, or put an exact phrase in quotes."
+                  : "This result set covers the current research question. Try fewer keywords or remove filters."}
               </p>
               <div className="mt-4 flex flex-wrap justify-center gap-2">
                 {active.length > 0 && (
@@ -252,21 +271,30 @@ function Discover() {
                     Clear filters
                   </Button>
                 )}
-                <Button
-                  variant="editorial"
-                  type="button"
-                  onClick={() => runSearch(TOPICS[0]?.question ?? "")}
-                  className="rounded-sm border border-border px-3 py-1.5 text-xs"
-                >
-                  Try the housing question
-                </Button>
+                {!live && (
+                  <Button
+                    variant="editorial"
+                    type="button"
+                    onClick={() => runSearch(TOPICS[0]?.question ?? "")}
+                    className="rounded-sm border border-border px-3 py-1.5 text-xs"
+                  >
+                    Try the housing question
+                  </Button>
+                )}
               </div>
             </div>
           )}
           {status === "ready" && results.length > 0 && (
             <div className="divide-y divide-border">
               {results.map((r) => (
-                <ResultCard key={r.record.id} result={r} />
+                <ResultCard
+                  key={r.record.id}
+                  result={r}
+                  themes={(analysis.recordThemes[r.record.id] ?? []).flatMap((id) =>
+                    analysis.byId[id] ? [analysis.byId[id]!] : [],
+                  )}
+                  searchTermCount={searchTermCount}
+                />
               ))}
             </div>
           )}

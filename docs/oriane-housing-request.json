@@ -1,0 +1,14 @@
+{
+  "operator": "and",
+  "filters": {
+    "platform": { "includes": ["tiktok", "instagram"] },
+    "format": { "includes": ["video"] },
+    "transcriptLanguage": { "includes": ["fr"] },
+    "transcript": {
+      "includesFuzzy": {
+        "values": ["logement étudiant", "loyer", "garant"],
+        "operator": "or"
+      }
+    }
+  }
+}

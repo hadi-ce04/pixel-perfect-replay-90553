@@ -3,6 +3,7 @@ import "@xyflow/react/dist/style.css";
 import { useMemo } from "react";
 import { buildStoryGraph, type GraphNodeKind } from "@/lib/graph";
 import type { VideoRecord } from "@/lib/types";
+import type { EvidenceAnalysis } from "@/lib/analysis";
 
 type Data = { label: string; kind: GraphNodeKind; count?: number | undefined; selected: boolean; saved: boolean; dim: boolean; idx: number };
 
@@ -38,6 +39,7 @@ export function StoryGraph({
   savedIds,
   onSelect,
   interactive = true,
+  analysis,
 }: {
   question: string;
   records: VideoRecord[];
@@ -45,8 +47,12 @@ export function StoryGraph({
   savedIds: string[];
   onSelect?: (nodeId: string, kind: GraphNodeKind, refId: string) => void;
   interactive?: boolean;
+  analysis?: EvidenceAnalysis;
 }) {
-  const g = useMemo(() => buildStoryGraph(question, records), [question, records]);
+  const g = useMemo(
+    () => buildStoryGraph(question, records, analysis),
+    [question, records, analysis],
+  );
 
   const connected = useMemo(() => {
     if (!selectedId) return null;
@@ -67,7 +73,9 @@ export function StoryGraph({
     byKind.video.sort((a, b) => {
       const ra = records.find((r) => r.id === a.refId);
       const rb = records.find((r) => r.id === b.refId);
-      return themeOrder.indexOf(ra?.themes[0] ?? "") - themeOrder.indexOf(rb?.themes[0] ?? "");
+      const first = (id: string | undefined) =>
+        (id && analysis?.recordThemes[id]?.[0]) || (id && records.find((r) => r.id === id)?.themes[0]) || "";
+      return themeOrder.indexOf(first(ra?.id)) - themeOrder.indexOf(first(rb?.id));
     });
     const gap: Record<GraphNodeKind, number> = { question: 0, theme: 90, video: 70, perspective: 100 };
     const maxH = Math.max(...(Object.keys(byKind) as GraphNodeKind[]).map((k) => byKind[k].length * gap[k]));
@@ -101,7 +109,7 @@ export function StoryGraph({
       className: connected && (e.source === selectedId || e.target === selectedId) ? "is-active" : "",
     }));
     return { nodes, edges };
-  }, [g, records, selectedId, savedIds, connected]);
+  }, [g, records, selectedId, savedIds, connected, analysis]);
 
   return (
     <ReactFlow

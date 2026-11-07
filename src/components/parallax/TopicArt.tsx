@@ -1,7 +1,16 @@
 import type { TopicId } from "@/lib/types";
 
 /** Original geometric editorial illustrations. These do not depict source footage. */
-export function TopicArt({ topic, className = "" }: { topic: TopicId; className?: string }) {
+export function TopicArt({
+  topic,
+  className = "",
+  tone = 0,
+}: {
+  topic: TopicId | "open";
+  className?: string;
+  tone?: number;
+}) {
+  if (topic === "open") return <OpenArt className={className} tone={tone} />;
   const housing = topic === "housing";
   return (
     <svg
@@ -112,6 +121,28 @@ export function TopicArt({ topic, className = "" }: { topic: TopicId; className?
         strokeOpacity=".4"
         fill="none"
       />
+    </svg>
+  );
+}
+
+const OPEN_TONES = ["#a9bbc0", "#c6c9a6", "#b3a99a", "#8ea696"];
+
+/** Neutral composition for open-ended live questions. It suggests no subject or footage. */
+function OpenArt({ className, tone }: { className: string; tone: number }) {
+  const bg = OPEN_TONES[tone % OPEN_TONES.length]!;
+  const shift = (tone % 4) * 40;
+  return (
+    <svg
+      viewBox="0 0 400 480"
+      className={className}
+      preserveAspectRatio="xMidYMid slice"
+      aria-hidden="true"
+    >
+      <rect width="400" height="480" fill={bg} />
+      <rect x={40 + shift} y="70" width="150" height="340" fill="#26343a" />
+      <rect x={210 - shift / 2} y="150" width="150" height="260" fill="#e8d4bd" />
+      <circle cx={290 - shift / 2} cy="110" r="46" fill="#ec7853" />
+      <path d={`M0 410H400`} stroke="#26343a" strokeWidth="6" />
     </svg>
   );
 }

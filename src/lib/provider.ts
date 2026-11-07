@@ -1,3 +1,4 @@
+import { OrianeProvider } from "./oriane-provider";
 import { RECORDS } from "@/data/records";
 import { searchRecords } from "./search";
 import type { SearchFilters, SearchResult, VideoRecord } from "./types";
@@ -33,4 +34,8 @@ export class MockProvider implements SearchProvider {
   }
 }
 
-export const provider: SearchProvider = new MockProvider();
+export const mockProvider = new MockProvider();
+export const liveProvider = new OrianeProvider();
+export const isLiveMode =
+  import.meta.env.MODE !== "test" && import.meta.env["VITE_DATA_MODE"] === "live";
+export const provider: SearchProvider = isLiveMode ? liveProvider : mockProvider;

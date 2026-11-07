@@ -1,19 +1,16 @@
-export type Platform = "TikTok" | "Instagram";
+export type Platform = "TikTok" | "Instagram" | "YouTube";
 export type Modality = "speech" | "on-screen text" | "visual";
 export type ContentType =
-  | "Testimonial"
-  | "Street interview"
-  | "Explainer"
-  | "Vlog"
-  | "Commentary";
+  "Testimonial" | "Street interview" | "Explainer" | "Vlog" | "Commentary" | "Unclassified";
 
 export type TopicId = "housing" | "groceries" | "transport" | "employment" | "climate";
 
 export interface EvidenceEntry {
   modality: Modality;
   excerpt: string;
-  startSeconds: number;
-  endSeconds: number;
+  mediaIndex?: number;
+  startSeconds: number | null;
+  endSeconds: number | null;
 }
 
 export interface VideoRecord {
@@ -25,19 +22,24 @@ export interface VideoRecord {
   description: string;
   publishedAt: string; // ISO date
   creatorLabel: string;
-  durationSeconds: number;
+  durationSeconds: number | null;
   contentType: ContentType;
-  topic: TopicId;
+  topic: TopicId | "unclassified";
   evidence: EvidenceEntry[];
   themes: string[]; // theme ids
   perspective: string; // perspective id
   dataMode: "mock" | "live";
+  /** "keyword" = legacy dictionary tags; "evidence-terms" = themes derived from returned passages. */
+  annotationMethod?: "keyword" | "evidence-terms";
+  sourceMediaCount?: number;
+  /** Hashtags supplied by the source platform, exactly as returned. */
+  hashtags?: string[];
 }
 
 export interface Theme {
   id: string;
   label: string;
-  topic: TopicId;
+  topic: TopicId | "unclassified";
   description: string;
 }
 
@@ -73,4 +75,6 @@ export interface SearchResult {
   record: VideoRecord;
   score: number;
   matchedExcerpt: EvidenceEntry | null;
+  /** Question facet keys that Oriane reported as matched (named query groups). */
+  matchedFacets?: string[];
 }

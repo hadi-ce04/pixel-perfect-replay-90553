@@ -11,7 +11,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { themeOf } from "@/data/catalog";
+import { useMemo } from "react";
+import { analyzeEvidence } from "@/lib/analysis";
 import { useEvidenceCollection } from "@/lib/useEvidence";
 import { useStore } from "@/lib/store";
 import { formatDate } from "@/lib/format";
@@ -34,11 +35,13 @@ export const Route = createFileRoute("/app/saved")({
 });
 
 function Saved() {
-  const { saved, removeSaved, clearSaved, openRecord, hydrated } = useStore();
+  const { saved, removeSaved, clearSaved, openRecord, hydrated, query } = useStore();
   const { records, missingIds, isPending, isError, refetch } = useEvidenceCollection(
     saved,
     hydrated,
   );
+  // Themes are re-derived from the saved sources themselves, so they survive a reload.
+  const analysis = useMemo(() => analyzeEvidence(query, records), [query, records]);
 
   return (
     <div className="mx-auto max-w-5xl px-5 py-10 md:px-10">
@@ -83,7 +86,8 @@ function Saved() {
         )}
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
-        Stored locally in this browser. All records are fictional.
+        Stored locally in this browser. Source and demonstration records are labeled in their
+        evidence panels.
       </p>
 
       {missingIds.length > 0 && (
@@ -144,7 +148,10 @@ function Saved() {
                 </p>
                 <h2 className="font-display text-xl leading-snug">{r.title}</h2>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {r.themes.map((t) => themeOf(t).label).join(" · ")}
+                  {(analysis.recordThemes[r.id] ?? [])
+                    .slice(0, 6)
+                    .map((t) => analysis.byId[t]?.label ?? t)
+                    .join(" · ")}
                 </p>
               </div>
               <div className="flex gap-2">

@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
+import "@/components/parallax/StoryTensions.css";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { toast } from "sonner";
 import { briefToMarkdown, generateBrief } from "@/lib/brief";
 import { useEvidenceCollection } from "@/lib/useEvidence";
 import { useStore } from "@/lib/store";
-import { formatDate, formatTime } from "@/lib/format";
+import { formatDate, formatTime, formatTimeRange } from "@/lib/format";
 
 export const Route = createFileRoute("/app/brief")({
   head: () => ({
@@ -13,12 +14,12 @@ export const Route = createFileRoute("/app/brief")({
       { title: "Editorial brief — PARALLAX workspace" },
       {
         name: "description",
-        content: "A deterministic brief generated from your saved demonstration evidence.",
+        content: "A deterministic brief generated from your saved evidence.",
       },
       { property: "og:title", content: "Editorial brief — PARALLAX workspace" },
       {
         property: "og:description",
-        content: "A deterministic brief generated from your saved demonstration evidence.",
+        content: "A deterministic brief generated from your saved evidence.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -42,12 +43,15 @@ function Ref({ id }: { id: string }) {
 }
 
 function BriefPage() {
-  const { saved, query, hydrated } = useStore();
+  const { saved, query, hydrated, reportingLead } = useStore();
   const { records, missingIds, isPending, isError, refetch } = useEvidenceCollection(
     saved,
     hydrated,
   );
-  const brief = useMemo(() => generateBrief(query, records), [query, records]);
+  const brief = useMemo(
+    () => generateBrief(query, records, reportingLead),
+    [query, records, reportingLead],
+  );
   const md = useMemo(
     () =>
       briefToMarkdown(brief) +
@@ -157,6 +161,35 @@ function BriefPage() {
       </div>
 
       <article className="mt-8 space-y-10 border-t border-foreground pt-8">
+        {brief.reportingLead && (
+          <section className="tensions-brief-lead" aria-label="Selected reporting question">
+            <p className="eyebrow text-primary">
+              From Story Tensions / Selected reporting question
+            </p>
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight">
+              {brief.reportingLead.question}
+            </h2>
+            <p className="mt-3 text-xs text-muted-foreground">
+              A question to investigate. Compare circumstances before treating the accounts as
+              disagreement.
+            </p>
+            <ul className="mt-5 space-y-4">
+              {brief.tensionExcerpts.map((e) => (
+                <li key={e.recordId} className="border-l-2 border-primary pl-3">
+                  <p className="text-sm leading-relaxed">
+                    {e.modality === "visual" ? e.excerpt : `“${e.excerpt}”`}
+                  </p>
+                  <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                    <Ref id={e.recordId} />
+                    <span>
+                      {e.modality} · {formatTimeRange(e.startSeconds, e.endSeconds)}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
         {missingIds.length > 0 && (
           <p role="status" className="text-sm text-muted-foreground">
             {missingIds.length} unavailable saved records were excluded: {missingIds.join(", ")}.{" "}
@@ -194,8 +227,34 @@ function BriefPage() {
               </div>
             )}
           </dl>
-          <p className="mt-2 text-xs text-muted-foreground">Topics: {brief.topics.join(", ")}</p>
+          {brief.topics.length > 0 && (
+            <p className="mt-2 text-xs text-muted-foreground">Topics: {brief.topics.join(", ")}</p>
+          )}
         </section>
+
+        {brief.interpretation && (
+          <section>
+            <h2 className="eyebrow mb-3">How the question was read</h2>
+            <ul className="space-y-1.5 text-sm">
+              {brief.interpretation.facets.map((f) => (
+                <li key={f.key}>
+                  <span className="font-medium">{f.label}</span>{" "}
+                  <span className="text-muted-foreground">
+                    —{" "}
+                    {f.role === "context"
+                      ? "context only, not used as a search constraint"
+                      : `searched as ${f.terms.join(", ")}`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            {brief.interpretation.notes.map((n) => (
+              <p key={n} className="mt-2 text-xs text-muted-foreground">
+                {n}
+              </p>
+            ))}
+          </section>
+        )}
 
         <section>
           <h2 className="eyebrow mb-3">Observed themes</h2>
@@ -214,13 +273,28 @@ function BriefPage() {
                     <Ref key={id} id={id} />
                   ))}
                 </p>
+                {t.supports && t.supports.length > 0 && (
+                  <ul className="mt-2 space-y-1.5">
+                    {t.supports.map((e, i) => (
+                      <li key={`${e.recordId}-${i}`} className="border-l border-border pl-3 text-xs">
+                        <span className="text-foreground/85">“{e.excerpt}”</span>{" "}
+                        <span className="text-muted-foreground">
+                          {e.recordId} · {e.modality} · {formatTimeRange(e.startSeconds, e.endSeconds)}
+                          {e.shortened ? " · shortened" : ""}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </li>
             ))}
           </ul>
         </section>
 
         <section>
-          <h2 className="eyebrow mb-3">Contrasting perspectives</h2>
+          <h2 className="eyebrow mb-3">
+            {brief.dataMode === "live" ? "Speaker perspectives" : "Contrasting perspectives"}
+          </h2>
           <p className="text-sm">{brief.comparisonNote}</p>
           <ul className="mt-3 space-y-1.5">
             {brief.perspectives.map((p) => (
@@ -243,8 +317,9 @@ function BriefPage() {
                   {e.modality === "visual" ? e.excerpt : `“${e.excerpt}”`}
                 </p>
                 <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                  <Ref id={e.recordId} /> · {e.modality} · {formatTime(e.startSeconds)}–
-                  {formatTime(e.endSeconds)} · {e.title}
+                  <Ref id={e.recordId} /> · {e.modality} ·{" "}
+                  {formatTimeRange(e.startSeconds, e.endSeconds)} · {e.title}
+                  {e.shortened ? " · excerpt shortened" : ""}
                 </p>
               </li>
             ))}
