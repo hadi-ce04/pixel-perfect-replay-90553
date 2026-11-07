@@ -60,7 +60,7 @@ describe("Story Tensions workbench", () => {
     const stored = JSON.parse(localStorage.getItem("parallax:v1")!);
     expect(stored.reportingLead.evidenceIndices).toEqual([0, 0]);
     expect(stored.saved).toEqual(["HOU-002", "HOU-008"]);
-    fireEvent.click(screen.getByRole("button", { name: "Open editorial brief ↗" }));
+    fireEvent.click(screen.getByRole("button", { name: "Open editorial brief" }));
     expect(openBrief).toHaveBeenCalledOnce();
     fireEvent.click(screen.getByRole("button", { name: "Remove HOU-002 from saved evidence" }));
     expect(screen.getByLabelText("Selected lead")).toHaveTextContent("No angle");

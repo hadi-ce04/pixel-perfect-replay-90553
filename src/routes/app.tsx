@@ -2,8 +2,7 @@ import { useSearchProvider } from "@/lib/provider-context";
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { DemoBadge, Wordmark } from "@/components/parallax/Brand";
+import { DemoBadge, ThemeToggle, Wordmark } from "@/components/parallax/Brand";
 import { EvidencePanel } from "@/components/parallax/EvidencePanel";
 import { useStore } from "@/lib/store";
 
@@ -19,11 +18,20 @@ const NAV = [
   { to: "/app/brief", label: "Editorial brief" },
 ] as const;
 
-function NavList({ onNavigate }: { onNavigate?: () => void }) {
+function NavList({
+  layout,
+  onNavigate,
+}: {
+  layout: "bar" | "menu";
+  onNavigate?: () => void;
+}) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { saved } = useStore();
   return (
-    <nav aria-label="Workspace" className="flex flex-col gap-0.5">
+    <nav
+      aria-label="Workspace"
+      className={layout === "bar" ? "workspace-tabs" : "flex flex-col gap-0.5"}
+    >
       {NAV.map((n) => {
         const active =
           n.to === "/app" ? path === "/app" || path === "/app/" : path.startsWith(n.to);
@@ -31,18 +39,24 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
           <Link
             key={n.to}
             to={n.to}
+            activeOptions={{ exact: n.to === "/app", includeSearch: false }}
             onClick={onNavigate}
             aria-current={active ? "page" : undefined}
-            className={`flex items-center gap-3 rounded-sm px-3 py-2 text-sm transition-colors ${
-              active
-                ? "bg-sidebar-accent text-foreground"
-                : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"
-            }`}
+            className={
+              layout === "bar"
+                ? "workspace-tab"
+                : `flex items-center justify-between rounded-sm px-3 py-2.5 text-sm ${
+                    active
+                      ? "bg-secondary font-semibold text-foreground"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  }`
+            }
           >
-            <span className={`h-4 w-0.5 ${active ? "bg-primary" : "bg-transparent"}`} aria-hidden />
-            <span className="flex-1">{n.label}</span>
+            {n.label}
             {n.to === "/app/saved" && saved.length > 0 && (
-              <span className="font-mono text-[11px] text-primary">{saved.length}</span>
+              <span className="workspace-count" aria-label={`${saved.length} saved`}>
+                {saved.length}
+              </span>
             )}
           </Link>
         );
@@ -55,51 +69,45 @@ function AppLayout() {
   const live = useSearchProvider().mode === "live";
   const [open, setOpen] = useState(false);
   return (
-    <div className="flex min-h-screen w-full">
-      <aside className="sticky top-0 hidden h-screen w-52 shrink-0 flex-col border-r border-sidebar-border bg-sidebar p-4 lg:flex">
-        <div className="px-2 py-2">
+    <div className="flex min-h-screen w-full flex-col">
+      <header className="workspace-bar">
+        <div className="workspace-bar-inner">
           <Wordmark to="/" />
-          <p className="mt-3 text-xs text-muted-foreground">Research workspace</p>
-        </div>
-        <div className="mt-8 flex-1">
-          <NavList />
-        </div>
-        <div className="space-y-2 border-t border-sidebar-border px-2 pt-4">
-          <DemoBadge />
-          <p className="text-[11px] leading-relaxed text-muted-foreground">
-            {live
-              ? "Source videos from Oriane, any topic. Themes are terms found in source passages; perspectives are unclassified."
-              : "45 fictional records. No live retrieval is connected."}
-          </p>
-        </div>
-      </aside>
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-background px-4 lg:hidden">
-          <Wordmark to="/" />
-          <div className="flex items-center gap-2">
-            <DemoBadge />
-            <Button
-              variant="outline"
+          <div className="hidden min-w-0 flex-1 justify-center lg:flex">
+            <NavList layout="bar" />
+          </div>
+          <div className="ml-auto flex items-center gap-2 lg:ml-0">
+            <DemoBadge className="hidden sm:inline-flex" />
+            <ThemeToggle />
+            <button
               type="button"
               onClick={() => setOpen((o) => !o)}
               aria-expanded={open}
+              aria-controls="workspace-menu"
               aria-label={open ? "Close navigation" : "Open navigation"}
-              className="rounded-sm border border-border p-2"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-sm border border-border text-foreground lg:hidden"
             >
               {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-            </Button>
+            </button>
           </div>
-        </header>
+        </div>
         {open && (
-          <div className="border-b border-border bg-sidebar p-3 lg:hidden">
-            <NavList onNavigate={() => setOpen(false)} />
+          <div id="workspace-menu" className="border-t border-border px-4 py-3 lg:hidden">
+            <NavList layout="menu" onNavigate={() => setOpen(false)} />
           </div>
         )}
-        <main className="min-w-0 flex-1">
-          <Outlet />
-        </main>
-      </div>
+      </header>
+      <main className="min-w-0 flex-1">
+        <Outlet />
+      </main>
+      <footer className="workspace-footer">
+        <p>
+          {live
+            ? "Source videos from Oriane, on any topic. Themes are terms found in source passages; speaker perspectives are not classified."
+            : "45 fictional records. No live retrieval is connected."}
+        </p>
+        <DemoBadge className="sm:hidden" />
+      </footer>
       <EvidencePanel />
     </div>
   );

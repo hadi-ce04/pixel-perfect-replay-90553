@@ -1,3 +1,4 @@
+import { ArrowUpRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { perspectiveOf } from "@/data/catalog";
@@ -46,7 +47,6 @@ export function StoryTensions({
   if (!themeId)
     return (
       <section className="tensions-empty" aria-label="Story Tensions">
-        <p className="eyebrow text-primary">Story Tensions</p>
         <h2>Start with two connected records.</h2>
         <p>
           This search needs at least two distinct records with evidence and a shared theme. Broaden
@@ -58,7 +58,6 @@ export function StoryTensions({
     <section className="tensions-workbench" aria-label="Story Tensions">
       <div className="tensions-intro">
         <div>
-          <p className="eyebrow text-primary">Story Tensions / Compare the evidence</p>
           <h2>
             The story between
             <br />
@@ -251,7 +250,7 @@ function Comparison({
                 onClick={() => openRecord(reference.record.id)}
                 aria-label={`Inspect evidence ${side === 0 ? "A" : "B"}`}
               >
-                Inspect full context ↗
+                Inspect full context<ArrowUpRight aria-hidden="true" className="ml-1 inline h-3.5 w-3.5 align-[-2px]" />
               </Button>
               <SaveButton id={reference.record.id} />
             </div>
@@ -260,12 +259,12 @@ function Comparison({
       </div>
       <div className="tensions-reading">
         <div className="tensions-reading-copy">
-          <p className="eyebrow text-primary">
+          <h3>{comparison.title}</h3>
+          <p className="mt-2 text-xs font-semibold text-primary">
             {comparison.interpretation === "prepared-demo"
               ? "Prepared demo interpretation"
               : "Comparison prompt"}
           </p>
-          <h3>{comparison.title}</h3>
           <p>{comparison.reading}</p>
           <div className="tensions-context-note">
             <strong>Keep the circumstances in view</strong>
@@ -277,9 +276,8 @@ function Comparison({
           </div>
         </div>
         <div className="tensions-question">
-          <p className="eyebrow">Your next reporting question</p>
           <h3>{comparison.question}</h3>
-          <p>A question to investigate, not a verified conclusion.</p>
+          <p>Your next reporting question: one to investigate, not a verified conclusion.</p>
           <Button
             className="mt-6 w-full"
             onClick={() =>
@@ -316,7 +314,7 @@ function Comparison({
               className="mt-3 text-xs font-semibold text-primary"
               onClick={onOpenBrief}
             >
-              Open editorial brief ↗
+              Open editorial brief<ArrowUpRight aria-hidden="true" className="ml-1 inline h-3.5 w-3.5 align-[-2px]" />
             </Button>
           )}
         </div>

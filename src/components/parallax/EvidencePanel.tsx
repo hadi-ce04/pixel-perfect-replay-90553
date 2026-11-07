@@ -100,7 +100,7 @@ export function EvidencePanel() {
                   ["Topic", live ? "Not classified" : topicOf(record.topic).label],
                 ].map(([k, v]) => (
                   <div key={k}>
-                    <dt className="eyebrow">{k}</dt>
+                    <dt className="text-xs text-muted-foreground">{k}</dt>
                     <dd className="mt-0.5">{v}</dd>
                   </div>
                 ))}
@@ -114,7 +114,7 @@ export function EvidencePanel() {
                 </p>
               )}
               <section>
-                <h3 className="eyebrow mb-3">Evidence excerpts</h3>
+                <h3 className="mb-3 text-sm font-semibold">Evidence excerpts</h3>
                 {record.evidence.length === 0 && (
                   <p className="text-sm text-muted-foreground">
                     No transcript or on-screen text was supplied for this record.
@@ -167,7 +167,7 @@ export function EvidencePanel() {
 
               {live ? (
                 <section>
-                  <h3 className="eyebrow mb-2">Question terms in this source</h3>
+                  <h3 className="mb-2 text-sm font-semibold">Question terms in this source</h3>
                   {facetHits.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
                       No search terms in the current question.
@@ -195,7 +195,7 @@ export function EvidencePanel() {
                 </section>
               ) : (
                 <section>
-                  <h3 className="eyebrow mb-2">Themes</h3>
+                  <h3 className="mb-2 text-sm font-semibold">Themes</h3>
                   <ul className="space-y-2">
                     {record.themes.map((t) => (
                       <li key={t} className="text-sm">
@@ -208,7 +208,7 @@ export function EvidencePanel() {
               )}
 
               <section>
-                <h3 className="eyebrow mb-2">Perspective</h3>
+                <h3 className="mb-2 text-sm font-semibold">Perspective</h3>
                 <p className="text-sm">
                   <span className="font-medium">{perspectiveOf(record.perspective).label}</span>
                   <span className="text-muted-foreground">
@@ -219,7 +219,7 @@ export function EvidencePanel() {
               </section>
 
               <section className="border-t border-border pt-4 text-sm">
-                <h3 className="eyebrow mb-2">Context notes</h3>
+                <h3 className="mb-2 text-sm font-semibold">Context notes</h3>
                 <p className="text-muted-foreground">
                   {record.dataMode === "mock"
                     ? "The creator label is a generic descriptor, not a real account. Claims and figures in this record are invented for demonstration and must not be cited."

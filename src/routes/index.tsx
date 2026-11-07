@@ -2,7 +2,8 @@ import { SearchProviderBoundary } from "@/lib/provider-context";
 import { mockProvider } from "@/lib/provider";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { lazy, Suspense, useMemo, useState } from "react";
-import { DemoBadge, Wordmark } from "@/components/parallax/Brand";
+import { ArrowUpRight } from "lucide-react";
+import { DemoBadge, ThemeToggle, Wordmark } from "@/components/parallax/Brand";
 import { Button } from "@/components/ui/button";
 import { EvidencePanel } from "@/components/parallax/EvidencePanel";
 import { TopicArt } from "@/components/parallax/TopicArt";
@@ -58,6 +59,7 @@ function Landing() {
       <header className="landing-nav">
         <Wordmark />
         <nav aria-label="Main" className="flex items-center gap-7 text-xs font-semibold">
+          <ThemeToggle className="hidden sm:inline-flex" />
           <a
             href="#story-dna"
             className="hidden text-muted-foreground hover:text-foreground sm:block"
@@ -72,7 +74,7 @@ function Landing() {
           </a>
           <Button asChild variant="outline" className="rounded-full text-xs">
             <Link to="/app">
-              Enter workspace <span aria-hidden="true">↗</span>
+              Enter workspace <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />
             </Link>
           </Button>
         </nav>
@@ -80,15 +82,11 @@ function Landing() {
       <main>
         <section className="landing-hero">
           <div className="hero-copy">
-            <p className="eyebrow flex items-center gap-3">
-              <span className="h-1.5 w-1.5 bg-primary" />A research desk for social video
-            </p>
-            <h1>PARALLAX / Evidence, developed</h1>
-            <p className="hero-headline">
+            <h1 className="hero-headline">
               Look closer.
               <br />
               Find the <em>story.</em>
-            </p>
+            </h1>
             <p className="hero-description">
               The story is rarely in one video. Search what people say on camera, keep the exact
               words and timestamps, and put two accounts side by side.
@@ -96,7 +94,7 @@ function Landing() {
             <div className="mt-9 flex flex-wrap items-center gap-6">
               <Button asChild size="lg" className="h-12 px-7 font-bold">
                 <Link to="/app">
-                  Start investigating <span aria-hidden="true">↗</span>
+                  Start investigating <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
                 </Link>
               </Button>
               <a href="#story-dna" className="hero-link">
@@ -125,7 +123,6 @@ function Landing() {
 
         <section id="investigation" className="investigation-section">
           <div>
-            <p className="eyebrow text-primary">01 / Your starting point</p>
             <h2>
               A good story starts
               <br />
@@ -149,7 +146,7 @@ function Landing() {
                 onChange={(e) => setQuestion(e.target.value)}
               />
               <Button type="submit" size="icon" aria-label="Investigate this question">
-                ↗
+                <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
               </Button>
             </form>
             <div className="flex flex-wrap gap-2 pt-4">
@@ -174,8 +171,7 @@ function Landing() {
         <section id="story-dna" className="dna-section">
           <div className="section-heading">
             <div>
-              <p className="eyebrow text-primary">02 / The bigger picture</p>
-              <h2>
+                <h2>
                 Separate videos.
                 <br />
                 <span className="text-muted-foreground">Connected stories.</span>
@@ -191,7 +187,7 @@ function Landing() {
                 onClick={() => investigate(currentTopic.question, "/app/story-dna")}
                 className="mt-5 text-xs font-bold text-primary"
               >
-                Open full investigation ↗
+                Open full investigation <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />
               </Button>
             </div>
           </div>
@@ -254,7 +250,6 @@ function Landing() {
 
         <section className="evidence-section">
           <div className="evidence-copy">
-            <p className="eyebrow">03 / Keep the receipts</p>
             <h2>
               An insight is only
               <br />
@@ -267,7 +262,7 @@ function Landing() {
               and keep every reference within reach.
             </p>
             <Button type="button" onClick={() => openRecord(firstRecord.id)} className="ink-button">
-              Inspect a record <span>↗</span>
+              Inspect a record <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />
             </Button>
             <span className="evidence-disclaimer">Fictional example. No source footage.</span>
           </div>
@@ -292,7 +287,6 @@ function Landing() {
 
         <section className="brief-section">
           <div>
-            <p className="eyebrow text-primary">04 / From research to direction</p>
             <h2>
               You found the evidence.
               <br />
@@ -303,7 +297,9 @@ function Landing() {
               references. You decide where the story goes next.
             </p>
             <Button asChild size="lg" className="mt-7 rounded-full">
-              <Link to="/app/brief">Open editorial brief ↗</Link>
+              <Link to="/app/brief">
+                Open editorial brief <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />
+              </Link>
             </Button>
           </div>
           <div className="brief-sheet">
@@ -349,8 +345,8 @@ function Landing() {
           <br />
           The workspace connects to live sources.
         </span>
-        <Link to="/app" className="text-xs font-semibold">
-          Open workspace ↗
+        <Link to="/app" className="inline-flex items-center gap-1 text-xs font-semibold">
+          Open workspace <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />
         </Link>
       </footer>
       <EvidencePanel />

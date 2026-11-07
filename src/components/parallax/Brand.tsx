@@ -1,5 +1,6 @@
 import { useSearchProvider } from "@/lib/provider-context";
 import { Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 
 export function BrandMark({ className = "h-7 w-7" }: { className?: string }) {
   return (
@@ -32,5 +33,33 @@ export function DemoBadge({ className = "" }: { className?: string }) {
       <span className="h-1 w-1 rounded-full bg-primary" />
       {live ? "Live Oriane" : "Demo data"}
     </span>
+  );
+}
+
+/** Light (contact print) by default; dark (darkroom) on request. Persists per browser. */
+export function ThemeToggle({ className = "" }: { className?: string }) {
+  const [dark, setDark] = useState(false);
+  useEffect(() => setDark(document.documentElement.classList.contains("dark")), []);
+  const toggle = () => {
+    const next = !dark;
+    document.documentElement.classList.toggle("dark", next);
+    try {
+      localStorage.setItem("parallax:theme", next ? "dark" : "light");
+    } catch {
+      /* storage unavailable */
+    }
+    setDark(next);
+  };
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      aria-pressed={dark}
+      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+      className={`theme-toggle inline-flex items-center gap-2 rounded-sm border border-border px-2.5 py-1 text-muted-foreground transition-colors hover:text-foreground ${className}`}
+    >
+      <span aria-hidden="true" className={`h-2.5 w-2.5 rounded-full border border-current ${dark ? "" : "bg-current"}`} />
+      {dark ? "Dark" : "Light"}
+    </button>
   );
 }

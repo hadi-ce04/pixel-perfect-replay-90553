@@ -41,7 +41,7 @@ export function QueryInterpretation({
       className="mt-5 border border-border bg-card p-4 text-xs leading-relaxed"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <p className="eyebrow text-primary">How Parallax read your question</p>
+        <h2 className="text-sm font-semibold">How Parallax read your question</h2>
         <span className="text-[10px] text-muted-foreground">
           Exact text matching, not semantic understanding
           {plan.language !== "unknown" ? ` · question language: ${plan.language}` : ""}

@@ -1,3 +1,4 @@
+import { ArrowUpRight, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { lazy, Suspense, useMemo, useState } from "react";
@@ -65,16 +66,7 @@ function StoryDNA() {
   return (
     <div className="flex min-h-screen flex-col">
       <div className="border-b border-border px-5 py-8 md:px-10">
-        <p className="eyebrow">Workspace · Story DNA</p>
-        {live && (
-          <p className="mt-2 text-xs text-muted-foreground">
-            Live source evidence. Themes are terms from your question and phrases that recur across
-            records, each linked to the exact passages that contain them. A shared term is not a
-            shared claim, and no speaker identity or stance is inferred. {info?.partial && "Oriane returned a partial response."}{" "}
-            Only the current search page is represented.
-          </p>
-        )}
-        <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
+        <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="min-w-0">
             <h1
               className={`max-w-3xl font-display leading-tight ${view === "tensions" ? "text-2xl md:text-3xl" : "text-3xl md:text-5xl"}`}
@@ -85,6 +77,14 @@ function StoryDNA() {
               {records.length} {live ? "source" : "fictional"} records · {g.themeCounts.size} themes
               · {g.perspCounts.size} perspective labels
             </p>
+            {live && (
+              <p className="mt-3 max-w-4xl text-xs leading-relaxed text-muted-foreground">
+                Live source evidence. Themes are terms from your question and phrases that recur across
+                records, each linked to the exact passages that contain them. A shared term is not a
+                shared claim, and no speaker identity or stance is inferred. {info?.partial && "Oriane returned a partial response."}{" "}
+                Only the current search page is represented.
+              </p>
+            )}
           </div>
           <div role="tablist" aria-label="View" className="flex border border-border">
             {(["graph", "list", "tensions"] as const).map((v) => (
@@ -134,14 +134,13 @@ function StoryDNA() {
       {status === "ready" && records.length > 0 && view !== "tensions" && (
         <div className="tensions-entry">
           <div>
-            <span className="eyebrow text-primary">A different angle</span>
             <p>What do two accounts reveal together?</p>
             <span>
               Compare excerpts, inspect their context, and find your next reporting question.
             </span>
           </div>
           <Button variant="outline" onClick={() => setView("tensions")}>
-            Explore Story Tensions ↗
+            Explore Story Tensions<ArrowUpRight aria-hidden="true" className="ml-1 inline h-3.5 w-3.5 align-[-2px]" />
           </Button>
         </div>
       )}
@@ -165,7 +164,7 @@ function StoryDNA() {
             to="/app/discover"
             className="mt-4 inline-block text-sm text-primary hover:underline"
           >
-            Adjust search in Discover →
+            Adjust search in Discover<ArrowRight aria-hidden="true" className="ml-1 inline h-3.5 w-3.5 align-[-2px]" />
           </Link>
         </div>
       ) : view === "tensions" ? (
@@ -208,17 +207,19 @@ function StoryDNA() {
           >
             {!sel || sel.kind === "question" || sel.kind === "video" ? (
               <div className="text-sm text-muted-foreground">
-                <h2 className="eyebrow mb-2">Evidence index</h2>
+                <h2 className="mb-2 text-sm font-semibold text-foreground">Evidence index</h2>
                 <p>No theme or perspective selected.</p>
               </div>
             ) : (
               <div>
-                <p className="eyebrow">{sel.kind}</p>
-                <h2 className="mt-1 font-display text-3xl">
+                <h2 className="font-display text-3xl">
                   {sel.kind === "theme"
                     ? (analysis.byId[sel.ref]?.label ?? sel.ref)
                     : perspectiveOf(sel.ref).label}
                 </h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {sel.kind === "theme" ? "Theme" : "Perspective label"}
+                </p>
                 <p className="mt-2 text-sm text-muted-foreground">
                   {sel.kind === "theme"
                     ? (analysis.byId[sel.ref]?.description ?? "")
@@ -230,10 +231,11 @@ function StoryDNA() {
                     className="mt-5 w-full text-xs"
                     onClick={() => setView("tensions")}
                   >
-                    Compare this theme ↗
+                    Compare this theme<ArrowUpRight aria-hidden="true" className="ml-1 inline h-3.5 w-3.5 align-[-2px]" />
                   </Button>
                 )}
-                <h3 className="eyebrow mb-2 mt-6">Associated evidence · {panelRecords.length}</h3>
+                <h3 className="mb-2 mt-6 text-sm font-semibold text-foreground">Associated evidence{" "}
+                  <span className="font-mono text-muted-foreground">{panelRecords.length}</span></h3>
                 <ul className="divide-y divide-border">
                   {panelRecords.map((r) => (
                     <li key={r.id} className="py-4">
@@ -263,7 +265,7 @@ function StoryDNA() {
         </div>
       ) : (
         <div className="mx-auto w-full max-w-5xl px-5 py-8 md:px-10">
-          <h2 className="eyebrow mb-4">Themes and their records</h2>
+          <h2 className="mb-4 text-sm font-semibold text-foreground">Themes and their records</h2>
           <div className="space-y-6">
             {[...g.themeCounts].map(([t, n]) => (
               <section key={t} className="border-t border-border pt-4">
@@ -298,7 +300,7 @@ function StoryDNA() {
               </section>
             ))}
           </div>
-          <h2 className="eyebrow mb-3 mt-10">Perspectives</h2>
+          <h2 className="mb-3 mt-10 text-sm font-semibold text-foreground">Perspectives</h2>
           <ul className="space-y-1 text-sm">
             {[...g.perspCounts].map(([p, n]) => (
               <li key={p}>
@@ -319,8 +321,8 @@ function SupportQuote({ theme, recordId }: { theme: EvidenceTheme; recordId: str
   if (!ref) return null;
   const shown = excerptWindow(ref.excerpt, ref.match, 280);
   return (
-    <blockquote className="mt-2 border-l-2 border-primary pl-3 text-xs leading-relaxed text-foreground/85">
-      <span className="mb-0.5 block text-[10px] uppercase tracking-wider text-muted-foreground">
+    <blockquote className="mt-2 border-l border-border pl-3 text-xs leading-relaxed text-foreground/85">
+      <span className="mb-0.5 block font-mono text-[10px] text-muted-foreground">
         {ref.modality} · {formatTimeRange(ref.startSeconds, ref.endSeconds)}
       </span>
       “<Highlight text={shown.text} terms={theme.terms} />”

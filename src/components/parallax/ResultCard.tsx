@@ -1,3 +1,4 @@
+import { ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { SearchResult } from "@/lib/types";
 import type { EvidenceTheme } from "@/lib/analysis";
@@ -39,18 +40,15 @@ export function ResultCard({
         <PreviewTile record={record} className="aspect-[4/3] sm:aspect-[3/4]" />
       </button>
       <div className="min-w-0">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          {record.platform} <span className="mx-2 text-primary">/</span> {record.contentType}{" "}
-          <span className="mx-2">·</span> {formatDate(record.publishedAt)}
-        </p>
-        <h3 className="mt-2 font-display text-xl leading-snug">{record.title}</h3>
+        <h3 className="font-display text-xl leading-snug">{record.title}</h3>
         <p className="mt-2 text-xs text-muted-foreground">
-          {record.creatorLabel} ·{" "}
+          {record.creatorLabel} · {record.platform} · {formatDate(record.publishedAt)}
+          {record.contentType !== "Unclassified" ? ` · ${record.contentType}` : ""} ·{" "}
           {record.dataMode === "mock" ? "Fictional record" : "Oriane source record"}
         </p>
         {ex && (
-          <blockquote className="mt-4 border-l-2 border-primary pl-3 text-sm leading-relaxed text-foreground/85">
-            <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-primary">
+          <blockquote className="mt-4 border-l border-border pl-3 text-sm leading-relaxed text-foreground/85">
+            <span className="mb-1 block font-mono text-[11px] text-muted-foreground">
               {ex.modality} · {formatTime(ex.startSeconds)}
             </span>
             {ex.modality === "visual" ? (
@@ -91,7 +89,7 @@ export function ResultCard({
             onClick={() => openRecord(record.id)}
             className="text-xs font-semibold text-primary"
           >
-            Inspect evidence ↗
+            Inspect evidence<ArrowUpRight aria-hidden="true" className="ml-1 inline h-3.5 w-3.5 align-[-2px]" />
           </Button>
           <SaveButton id={record.id} />
         </div>

@@ -1,7 +1,7 @@
 import { useSearchProvider } from "@/lib/provider-context";
 import { Button } from "@/components/ui/button";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { X } from "lucide-react";
+import { ArrowRight, X } from "lucide-react";
 import { useState } from "react";
 import { TOPICS, topicOf } from "@/data/catalog";
 import { ResultCard } from "@/components/parallax/ResultCard";
@@ -96,8 +96,7 @@ function Discover() {
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-10 md:px-10">
-      <p className="eyebrow">Workspace · Discover</p>
-      <h1 className="mt-2 font-display text-4xl md:text-5xl">Discover</h1>
+      <h1 className="font-display text-4xl md:text-5xl">Discover</h1>
       <div className="mt-6">
         <SearchBar size="md" />
       </div>
@@ -126,7 +125,7 @@ function Discover() {
           className={`space-y-6 ${showFilters ? "block" : "hidden lg:block"}`}
         >
           <fieldset>
-            <legend className="eyebrow mb-2">Platform</legend>
+            <legend className="mb-2 text-sm font-semibold text-foreground">Platform</legend>
             <div className="flex flex-wrap gap-1.5">
               {PLATFORMS.map((p) => (
                 <Chip
@@ -141,7 +140,7 @@ function Discover() {
           </fieldset>
           {!live && (
           <fieldset>
-            <legend className="eyebrow mb-2">Topic</legend>
+            <legend className="mb-2 text-sm font-semibold text-foreground">Topic</legend>
             <div className="flex flex-wrap gap-1.5">
               {TOPICS.map((t) => (
                 <Chip
@@ -156,7 +155,7 @@ function Discover() {
           </fieldset>
           )}
           <fieldset disabled={live}>
-            <legend className="eyebrow mb-2">Content type</legend>
+            <legend className="mb-2 text-sm font-semibold text-foreground">Content type</legend>
             {live && (
               <p className="mb-2 text-xs text-muted-foreground">
                 Not classified for live results. Clear these filters to search Oriane.
@@ -175,7 +174,7 @@ function Discover() {
             </div>
           </fieldset>
           <fieldset className="space-y-2">
-            <legend className="eyebrow mb-2">Published</legend>
+            <legend className="mb-2 text-sm font-semibold text-foreground">Published</legend>
             <label className="block text-xs text-muted-foreground">
               From
               <input
@@ -232,7 +231,7 @@ function Discover() {
             )}
             {results.length > 0 && (
               <Link to="/app/story-dna" className="ml-auto text-xs text-primary hover:underline">
-                View as Story DNA →
+                View as Story DNA<ArrowRight aria-hidden="true" className="ml-1 inline h-3.5 w-3.5 align-[-2px]" />
               </Link>
             )}
           </div>

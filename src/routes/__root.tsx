@@ -7,6 +7,7 @@ import {
   HeadContent,
   Scripts,
   type ErrorComponentProps,
+  ScriptOnce,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
@@ -117,8 +118,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Apply the saved theme before first paint (light is the default). */}
+        <ScriptOnce>
+          {"try{if(localStorage.getItem('parallax:theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}"}
+        </ScriptOnce>
         <HeadContent />
       </head>
       <body>

@@ -1,3 +1,4 @@
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
@@ -45,8 +46,7 @@ function Saved() {
 
   return (
     <div className="mx-auto max-w-5xl px-5 py-10 md:px-10">
-      <p className="eyebrow">Workspace · Saved evidence</p>
-      <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <h1 className="font-display text-4xl md:text-5xl">
           Saved evidence{" "}
           <span className="font-mono text-xl text-muted-foreground">{records.length}</span>
@@ -80,7 +80,7 @@ function Saved() {
               to="/app/brief"
               className="rounded-sm bg-primary px-3 py-2 text-xs font-medium text-primary-foreground"
             >
-              Create editorial brief →
+              Create editorial brief<ArrowRight aria-hidden="true" className="ml-1 inline h-3.5 w-3.5 align-[-2px]" />
             </Link>
           </div>
         )}
@@ -135,7 +135,7 @@ function Saved() {
             to="/app/discover"
             className="mt-4 inline-block text-sm text-primary hover:underline"
           >
-            Go to Discover →
+            Go to Discover<ArrowRight aria-hidden="true" className="ml-1 inline h-3.5 w-3.5 align-[-2px]" />
           </Link>
         </div>
       ) : (

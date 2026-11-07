@@ -108,8 +108,7 @@ function BriefPage() {
   if (records.length === 0)
     return (
       <div className="mx-auto max-w-3xl px-5 py-16 text-center md:px-10">
-        <p className="eyebrow">Workspace · Editorial brief</p>
-        <h1 className="mt-3 font-display text-4xl">Your brief starts with evidence</h1>
+        <h1 className="font-display text-4xl">Your brief starts with evidence</h1>
         <p className="mt-3 text-sm text-muted-foreground">
           {missingIds.length
             ? "Your saved records are unavailable from the current source. Review your saved evidence or select available records."
@@ -131,8 +130,7 @@ function BriefPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-5 py-10 md:px-10">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="eyebrow">Workspace · Editorial brief</p>
+      <div className="flex flex-wrap items-center justify-end gap-3">
         <div className="flex gap-2">
           <Button
             variant="editorial"
@@ -163,19 +161,19 @@ function BriefPage() {
       <article className="mt-8 space-y-10 border-t border-foreground pt-8">
         {brief.reportingLead && (
           <section className="tensions-brief-lead" aria-label="Selected reporting question">
-            <p className="eyebrow text-primary">
-              From Story Tensions / Selected reporting question
-            </p>
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight">
+            <h2 className="text-2xl font-semibold tracking-tight">
               {brief.reportingLead.question}
             </h2>
+            <p className="mt-2 text-xs font-semibold text-primary">
+              Reporting question selected in Story Tensions
+            </p>
             <p className="mt-3 text-xs text-muted-foreground">
               A question to investigate. Compare circumstances before treating the accounts as
               disagreement.
             </p>
             <ul className="mt-5 space-y-4">
               {brief.tensionExcerpts.map((e) => (
-                <li key={e.recordId} className="border-l-2 border-primary pl-3">
+                <li key={e.recordId} className="border-l border-border pl-3">
                   <p className="text-sm leading-relaxed">
                     {e.modality === "visual" ? e.excerpt : `“${e.excerpt}”`}
                   </p>
@@ -199,14 +197,14 @@ function BriefPage() {
           </p>
         )}
         <header>
-          <p className="eyebrow">Research question</p>
-          <h1 className="mt-2 font-display text-4xl leading-tight md:text-5xl">
+          <h1 className="font-display text-4xl leading-tight md:text-5xl">
+            <span className="sr-only">Research question: </span>
             {brief.question || "No research question set"}
           </h1>
         </header>
 
         <section>
-          <h2 className="eyebrow mb-3">Source coverage</h2>
+          <h2 className="mb-3 text-sm font-semibold text-foreground">Source coverage</h2>
           <dl className="grid grid-cols-2 gap-4 border-y border-border py-4 sm:grid-cols-4">
             <div className="py-1">
               <dd className="text-lg font-semibold">{brief.recordCount}</dd>
@@ -234,7 +232,7 @@ function BriefPage() {
 
         {brief.interpretation && (
           <section>
-            <h2 className="eyebrow mb-3">How the question was read</h2>
+            <h2 className="mb-3 text-sm font-semibold text-foreground">How the question was read</h2>
             <ul className="space-y-1.5 text-sm">
               {brief.interpretation.facets.map((f) => (
                 <li key={f.key}>
@@ -257,7 +255,7 @@ function BriefPage() {
         )}
 
         <section>
-          <h2 className="eyebrow mb-3">Observed themes</h2>
+          <h2 className="mb-3 text-sm font-semibold text-foreground">Observed themes</h2>
           <ul className="divide-y divide-border">
             {brief.themes.map((t) => (
               <li key={t.id} className="py-3">
@@ -292,7 +290,7 @@ function BriefPage() {
         </section>
 
         <section>
-          <h2 className="eyebrow mb-3">
+          <h2 className="mb-3 text-sm font-semibold text-foreground">
             {brief.dataMode === "live" ? "Speaker perspectives" : "Contrasting perspectives"}
           </h2>
           <p className="text-sm">{brief.comparisonNote}</p>
@@ -309,10 +307,10 @@ function BriefPage() {
         </section>
 
         <section>
-          <h2 className="eyebrow mb-3">Supporting excerpts</h2>
+          <h2 className="mb-3 text-sm font-semibold text-foreground">Supporting excerpts</h2>
           <ul className="space-y-4">
             {brief.excerpts.map((e) => (
-              <li key={e.recordId} className="border-l-2 border-primary pl-4">
+              <li key={e.recordId} className="border-l border-border pl-4">
                 <p className="font-display text-xl leading-snug">
                   {e.modality === "visual" ? e.excerpt : `“${e.excerpt}”`}
                 </p>
@@ -327,7 +325,7 @@ function BriefPage() {
         </section>
 
         <section>
-          <h2 className="eyebrow mb-3">Questions requiring independent verification</h2>
+          <h2 className="mb-3 text-sm font-semibold text-foreground">Questions requiring independent verification</h2>
           <ul className="list-disc space-y-1.5 pl-5 text-sm">
             {brief.verification.map((v) => (
               <li key={v}>{v}</li>
@@ -336,7 +334,7 @@ function BriefPage() {
         </section>
 
         <section>
-          <h2 className="eyebrow mb-3">Potential editorial angles</h2>
+          <h2 className="mb-3 text-sm font-semibold text-foreground">Potential editorial angles</h2>
           <ul className="list-disc space-y-1.5 pl-5 text-sm">
             {brief.angles.map((a) => (
               <li key={a}>{a}</li>
