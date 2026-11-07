@@ -39,10 +39,10 @@ export function PreviewTile({
           className="absolute inset-0 h-full w-full"
         />
       )}
-      <span className="absolute left-2 top-2 rounded-sm bg-[#161c20] px-1.5 py-1 font-mono text-[9px] text-white">
+      <span className="absolute left-2 top-2 rounded-sm bg-foreground px-1.5 py-1 font-mono text-[10px] text-background">
         {record.id}
       </span>
-      <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-[#161c20] px-2 py-2 text-[9px] text-white">
+      <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-card px-2 py-2 text-[10px] text-foreground">
         <span>
           {record.dataMode === "mock" ? "Illustration · fictional record" : "Source thumbnail"}
         </span>
