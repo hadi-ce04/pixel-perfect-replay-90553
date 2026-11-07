@@ -40,3 +40,11 @@ Real speech chunks retain source text, decimal timestamps and stable evidence or
 Automated checks cover source mapping, missing values, exact search filters, stable passage order, partial response shape, credential handling, request validation, quota failures and the existing provider/save/brief workflows. Browser checks cover live search, evidence inspection, saving and reloading a real source, and generating the source-based brief.
 
 The supplied account returned HTTP 206 with incomplete evidence coverage. Review original sources and verify claims independently. Original-post URLs are absent for many Instagram records. Hosted runtime credentials, deployment, pagination, advanced relevance, and visual similarity remain future work.
+
+## AI comparison and brief reading (OpenAI)
+
+Story Tensions ("Analyse this pair") and the editorial brief ("Generate AI reading") can call OpenAI through the same-origin `POST /api/analyze` endpoint (`src/lib/ai.server.ts`). The key is server-only: `OPENAI_API_KEY` in `.env.local` locally, and as a runtime secret on the host. `OPENAI_MODEL` overrides the default `gpt-4.1-mini` (GPT-5 reasoning models reject the `temperature` parameter the endpoint sends). Analysis runs only on click.
+
+Grounding rules (`src/lib/ai-analysis.ts`): the model receives only the exact selected passages, marked as untrusted data. Every point must cite a quote that the server verifies verbatim against the passage it names; unverified points are dropped and counted. A "shared" point must cite both passages; a "differ" verdict without a verified difference is downgraded to "unclear". Statements must be attributed to their source, never asserted as fact. Output is labelled AI-generated with model and time, in the UI and in the Markdown export. Verified live on 7 November 2026 with elections and sports pairs: all citations matched their sources.
+
+The public site has no access control, so anyone with the link can spend both Oriane and OpenAI credits.

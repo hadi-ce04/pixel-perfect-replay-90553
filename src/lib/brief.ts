@@ -1,3 +1,5 @@
+import type { AiBrief, AiComparison, AiPassage } from "./ai-analysis";
+import { RELATIONSHIP_SENTENCE, briefPassages } from "./ai-analysis";
 import { perspectiveOf, topicOf } from "@/data/catalog";
 import { formatTimeRange } from "./format";
 import type { VideoRecord } from "./types";
@@ -49,6 +51,12 @@ export interface Brief {
   reportingLead: ReportingLead | null;
   tensionExcerpts: BriefReference[];
   interpretation: BriefInterpretation | null;
+  /** AI comparison saved with the reporting lead (only while the lead is valid). */
+  aiComparison: AiComparison | null;
+  /** AI reading of the selected evidence, if the user generated one. */
+  ai: AiBrief | null;
+  /** Passages the AI brief cited, by ref (S1..), for mapping quotes back to records. */
+  aiPassages: AiPassage[];
 }
 
 const KIND_LABEL: Record<ThemeKind, string> = {
@@ -79,6 +87,7 @@ export function generateBrief(
   records: VideoRecord[],
   selectedLead?: ReportingLead | null,
   analysisInput?: EvidenceAnalysis,
+  aiBrief?: AiBrief | null,
 ): Brief {
   const sorted = [...new Map(records.map((r) => [r.id, r])).values()].sort((a, b) =>
     a.id.localeCompare(b.id),
@@ -227,9 +236,14 @@ export function generateBrief(
       })
     : [];
   const hasLive = sorted.some((r) => r.dataMode === "live");
+  // The AI brief cites S-refs; the same deterministic passage selection maps them back.
+  const aiPassages = aiBrief ? briefPassages(question, sorted) : [];
   return {
     reportingLead,
     tensionExcerpts,
+    aiComparison: reportingLead?.ai ?? null,
+    ai: aiBrief && aiPassages.length ? aiBrief : null,
+    aiPassages: aiBrief ? aiPassages : [],
     dataMode: sorted.every((r) => r.dataMode === "mock")
       ? "mock"
       : sorted.every((r) => r.dataMode === "live")
@@ -355,9 +369,82 @@ export function briefToMarkdown(b: Brief): string {
     );
     if (e.sourceUrl?.startsWith("https://")) L.push(`  Source: ${e.sourceUrl}`);
   });
+  appendAiSections(L, b);
   L.push("", "## Requires independent verification");
   b.verification.forEach((v) => L.push(`- ${v}`));
   L.push("", "## Potential editorial angles");
   b.angles.forEach((a) => L.push(`- ${a}`));
   return L.join("\n");
+}
+
+function aiStamp(model: string, generatedAt: string) {
+  return `> AI-generated (${model}, ${generatedAt}). Check every quote against the source before use. Not a verified conclusion.`;
+}
+
+function citationLines(
+  citations: { ref: string; quote: string }[],
+  resolve: (ref: string) => { label: string } | null,
+) {
+  return citations.map((c) => {
+    const where = resolve(c.ref);
+    return `  > "${c.quote}" — ${where ? where.label : c.ref}`;
+  });
+}
+
+function appendAiSections(L: string[], b: Brief) {
+  if (b.aiComparison && b.reportingLead) {
+    const c = b.aiComparison;
+    const sides = b.tensionExcerpts;
+    const resolve = (ref: string) => {
+      const s = ref === "A" ? sides[0] : ref === "B" ? sides[1] : undefined;
+      return s
+        ? { label: `${ref}: ${s.recordId}, ${s.modality}, ${formatTimeRange(s.startSeconds, s.endSeconds)}` }
+        : null;
+    };
+    L.push("", "## AI comparison of the selected passages", aiStamp(c.model, c.generatedAt), "");
+    L.push(`**${RELATIONSHIP_SENTENCE[c.relationship]}.** ${c.summary}`);
+    const kinds: [string, string][] = [
+      ["common", "In common"],
+      ["difference", "Differences"],
+      ["context-gap", "Missing context"],
+    ];
+    for (const [kind, title] of kinds) {
+      const points = c.points.filter((p) => p.kind === kind);
+      if (!points.length) continue;
+      L.push("", `**${title}**`);
+      points.forEach((p) => L.push(`- ${p.text}`, ...citationLines(p.citations, resolve)));
+    }
+    if (c.caveats.length) L.push("", "**Caveats**", ...c.caveats.map((x) => `- ${x}`));
+    if (c.droppedPoints)
+      L.push("", `_${c.droppedPoints} AI point(s) were removed because their quotes did not match the source._`);
+  }
+  if (b.ai) {
+    const a = b.ai;
+    const byRef = new Map(b.aiPassages.map((p) => [p.ref, p]));
+    const resolve = (ref: string) => {
+      const p = byRef.get(ref);
+      return p
+        ? { label: `${p.recordId}, ${p.modality}, ${formatTimeRange(p.startSeconds, p.endSeconds)}` }
+        : null;
+    };
+    L.push("", "## AI reading of the selected evidence", aiStamp(a.model, a.generatedAt), "");
+    if (a.overview) L.push(a.overview);
+    if (a.findings.length) {
+      L.push("", "**Findings**");
+      a.findings.forEach((f) => L.push(`- ${f.text}`, ...citationLines(f.citations, resolve)));
+    }
+    if (a.tensions.length) {
+      L.push("", "**Tensions between passages**");
+      a.tensions.forEach((f) => L.push(`- ${f.text}`, ...citationLines(f.citations, resolve)));
+    }
+    const lists: [string, string[]][] = [
+      ["Gaps in the evidence", a.gaps],
+      ["To verify", a.verification],
+      ["Possible angles", a.angles],
+    ];
+    for (const [title, items] of lists)
+      if (items.length) L.push("", `**${title}**`, ...items.map((x) => `- ${x}`));
+    if (a.droppedPoints)
+      L.push("", `_${a.droppedPoints} AI point(s) were removed because their quotes did not match the source._`);
+  }
 }

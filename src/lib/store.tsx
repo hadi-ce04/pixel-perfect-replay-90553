@@ -10,6 +10,7 @@ import {
 } from "react";
 import { emptyFilters, type SearchFilters } from "./types";
 import type { ReportingLead } from "./tensions";
+import { isAiComparison } from "./ai-analysis";
 import { legacyThemeDefinition, type ThemeDefinition } from "./analysis";
 
 const THEME_KINDS = ["question-term", "recurring-phrase", "hashtag", "catalog", "legacy-keyword"];
@@ -50,7 +51,9 @@ export function restoreReportingLead(lead: any, live: boolean): ReportingLead | 
     )
   )
     return null;
-  const { theme, ...rest } = lead;
+  const { theme, ai, ...base } = lead;
+  // A malformed AI comparison is dropped on its own; the reporting lead itself is kept.
+  const rest = isAiComparison(ai) ? { ...base, ai } : base;
   if (theme !== undefined) return validThemeSnapshot(theme) ? { ...rest, theme } : null;
   if (live) {
     const legacy = legacyThemeDefinition(lead.themeId);

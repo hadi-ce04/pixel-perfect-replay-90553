@@ -10,6 +10,7 @@ import {
   type ThemeDefinition,
 } from "./analysis";
 import type { EvidenceEntry, VideoRecord } from "./types";
+import type { AiComparison } from "./ai-analysis";
 
 export interface ReportingLead {
   themeId: string;
@@ -20,6 +21,8 @@ export interface ReportingLead {
   question: string;
   /** Snapshot of the theme definition, so the lead stays resolvable after reload. */
   theme?: ThemeDefinition;
+  /** Optional AI comparison of exactly these two passages (citations already verified). */
+  ai?: AiComparison;
 }
 
 export interface EvidenceReference {

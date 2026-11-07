@@ -51,6 +51,10 @@ export default {
         const { handleOriane } = await import("./lib/oriane.server");
         return await handleOriane(request, env);
       }
+      if (new URL(request.url).pathname === "/api/analyze") {
+        const { handleAnalyze } = await import("./lib/ai.server");
+        return await handleAnalyze(request, env);
+      }
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);

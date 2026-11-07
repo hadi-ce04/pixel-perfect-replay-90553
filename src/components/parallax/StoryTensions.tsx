@@ -1,4 +1,4 @@
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, GitCompareArrows, RotateCcw } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { perspectiveOf } from "@/data/catalog";
@@ -17,6 +17,9 @@ import {
 } from "@/lib/tensions";
 import type { VideoRecord } from "@/lib/types";
 import { SaveButton } from "./SaveButton";
+import { comparePassages, type AiComparison, type AiPassage } from "@/lib/ai-analysis";
+import { useAiComparison } from "@/lib/useAiAnalysis";
+import { AiCitations, AiProvenance, RELATIONSHIP_TEXT } from "./AiCitations";
 import "./StoryTensions.css";
 
 export function StoryTensions({
@@ -140,6 +143,19 @@ function Comparison({
     reportingLead.excerptTexts.every(
       (text, i) => text === [comparison.left, comparison.right][i]!.evidence.excerpt,
     );
+  const choose = (question: string, ai?: AiComparison) =>
+    chooseReportingLead({
+      themeId,
+      ...(theme
+        ? { theme: { id: theme.id, kind: theme.kind, label: theme.label, terms: theme.terms } }
+        : {}),
+      researchQuestion: query,
+      recordIds: ids,
+      evidenceIndices: indices,
+      excerptTexts: [comparison.left.evidence.excerpt, comparison.right.evidence.excerpt],
+      question,
+      ...(ai ? { ai } : {}),
+    });
   const changeRecord = (side: number, id: string) => {
     const next = [...ids] as [string, string];
     next[side] = id;
@@ -280,28 +296,11 @@ function Comparison({
           <p>Your next reporting question: one to investigate, not a verified conclusion.</p>
           <Button
             className="mt-6 w-full"
-            onClick={() =>
-              chooseReportingLead({
-                themeId,
-                ...(theme
-                  ? {
-                      theme: {
-                        id: theme.id,
-                        kind: theme.kind,
-                        label: theme.label,
-                        terms: theme.terms,
-                      },
-                    }
-                  : {}),
-                researchQuestion: query,
-                recordIds: ids,
-                evidenceIndices: indices,
-                excerptTexts: [comparison.left.evidence.excerpt, comparison.right.evidence.excerpt],
-                question: comparison.question,
-              })
-            }
+            onClick={() => choose(comparison.question)}
           >
-            {used ? "Reporting question selected" : "Use this reporting question"}
+            {used && reportingLead?.question === comparison.question
+              ? "Reporting question selected"
+              : "Use this reporting question"}
           </Button>
           <span role="status" className="tensions-save-status">
             {used
@@ -319,7 +318,132 @@ function Comparison({
           )}
         </div>
       </div>
+      <AiPairAnalysis
+        key={`${ids.join("|")}:${indices.join("|")}`}
+        passages={comparePassages({ left: comparison.left, right: comparison.right })}
+        question={query}
+        selectedQuestion={used ? (reportingLead?.question ?? null) : null}
+        onChoose={choose}
+      />
     </>
+  );
+}
+
+function AiPairAnalysis({
+  passages,
+  question,
+  selectedQuestion,
+  onChoose,
+}: {
+  passages: AiPassage[];
+  question: string;
+  selectedQuestion: string | null;
+  onChoose: (question: string, ai: AiComparison) => void;
+}) {
+  const { result, run, status, error } = useAiComparison(passages, question);
+  const groups: { kind: "common" | "difference" | "context-gap"; title: string }[] = [
+    { kind: "difference", title: "Where they differ" },
+    { kind: "common", title: "What they share" },
+    { kind: "context-gap", title: "Context missing from both" },
+  ];
+  return (
+    <section className="tensions-ai" aria-label="AI comparison">
+      <div className="tensions-ai-head">
+        <div>
+          <h3>Read the two passages together</h3>
+          <p>
+            An AI model reads only passages A and B and must quote them for every point. Points
+            whose quotes do not match the source exactly are discarded.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={run}
+          disabled={status === "loading"}
+          aria-busy={status === "loading"}
+        >
+          <GitCompareArrows aria-hidden="true" className="mr-2 h-4 w-4" />
+          {status === "loading"
+            ? "Analysing…"
+            : result
+              ? "Analyse again"
+              : "Analyse this pair"}
+        </Button>
+      </div>
+      {status === "error" && (
+        <div role="alert" className="tensions-ai-error">
+          <p>AI comparison failed: {error}</p>
+          <Button variant="outline" size="sm" onClick={run}>
+            <RotateCcw aria-hidden="true" className="mr-1.5 h-3.5 w-3.5" />
+            Retry
+          </Button>
+        </div>
+      )}
+      {result && status !== "loading" && (
+        <div className="tensions-ai-result">
+          <p className="tensions-ai-relationship">{RELATIONSHIP_TEXT[result.relationship]}</p>
+          <p className="tensions-ai-summary">{result.summary}</p>
+          {groups.map((g) => {
+            const points = result.points.filter((p) => p.kind === g.kind);
+            if (!points.length) return null;
+            return (
+              <div key={g.kind} className="tensions-ai-group">
+                <h4>{g.title}</h4>
+                <ul>
+                  {points.map((p, i) => (
+                    <li key={i}>
+                      <p>{p.text}</p>
+                      <AiCitations citations={p.citations} passages={passages} />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+          {result.caveats.length > 0 && (
+            <div className="tensions-ai-group">
+              <h4>Before you compare</h4>
+              <ul className="list-disc pl-5">
+                {result.caveats.map((c) => (
+                  <li key={c}>{c}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {result.droppedPoints > 0 && (
+            <p className="tensions-ai-dropped">
+              {result.droppedPoints} {result.droppedPoints === 1 ? "point was" : "points were"}{" "}
+              removed because the quoted words were not found in the passages.
+            </p>
+          )}
+          {result.reportingQuestions.length > 0 && (
+            <div className="tensions-ai-group">
+              <h4>Suggested reporting questions</h4>
+              <ul className="tensions-ai-questions">
+                {result.reportingQuestions.map((q) => {
+                  const chosen = selectedQuestion === q;
+                  return (
+                    <li key={q}>
+                      <span>{q}</span>
+                      <Button
+                        variant={chosen ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => onChoose(q, result)}
+                        aria-pressed={chosen}
+                        aria-label={`Use reporting question: ${q}`}
+                      >
+                        {chosen ? "Selected" : "Use"}
+                      </Button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+          <AiProvenance model={result.model} generatedAt={result.generatedAt} />
+        </div>
+      )}
+    </section>
   );
 }
 

@@ -7,6 +7,10 @@ import { briefToMarkdown, generateBrief } from "@/lib/brief";
 import { useEvidenceCollection } from "@/lib/useEvidence";
 import { useStore } from "@/lib/store";
 import { formatDate, formatTime, formatTimeRange } from "@/lib/format";
+import { FileSearch, RotateCcw } from "lucide-react";
+import { briefPassages, type AiPassage } from "@/lib/ai-analysis";
+import { useAiBrief } from "@/lib/useAiAnalysis";
+import { AiCitations, AiProvenance, RELATIONSHIP_TEXT } from "@/components/parallax/AiCitations";
 
 export const Route = createFileRoute("/app/brief")({
   head: () => ({
@@ -48,10 +52,25 @@ function BriefPage() {
     saved,
     hydrated,
   );
+  const passages = useMemo(() => briefPassages(query, records), [query, records]);
+  const aiBrief = useAiBrief(passages, query);
   const brief = useMemo(
-    () => generateBrief(query, records, reportingLead),
-    [query, records, reportingLead],
+    () => generateBrief(query, records, reportingLead, undefined, aiBrief.result),
+    [query, records, reportingLead, aiBrief.result],
   );
+  // Story Tensions passages A and B, for mapping the saved AI comparison's citations.
+  const leadPassages: AiPassage[] = brief.tensionExcerpts.map((e, i) => ({
+    ref: i === 0 ? "A" : "B",
+    recordId: e.recordId,
+    title: e.title,
+    creator: "",
+    platform: "",
+    publishedAt: "",
+    modality: e.modality,
+    startSeconds: e.startSeconds,
+    endSeconds: e.endSeconds,
+    excerpt: e.excerpt,
+  }));
   const md = useMemo(
     () =>
       briefToMarkdown(brief) +
@@ -186,6 +205,34 @@ function BriefPage() {
                 </li>
               ))}
             </ul>
+            {brief.aiComparison && (
+              <div className="mt-6 border-t border-border pt-5" aria-label="AI comparison of the selected passages">
+                <h3 className="text-sm font-semibold">AI comparison of passages A and B</h3>
+                <p className="mt-2 text-sm font-semibold">
+                  {RELATIONSHIP_TEXT[brief.aiComparison.relationship]}
+                </p>
+                <p className="mt-1 text-sm leading-relaxed">{brief.aiComparison.summary}</p>
+                <ul className="mt-4 space-y-4">
+                  {brief.aiComparison.points.map((pt, i) => (
+                    <li key={i} className="text-sm leading-relaxed">
+                      <span className="text-xs font-semibold text-muted-foreground">
+                        {pt.kind === "difference"
+                          ? "Difference"
+                          : pt.kind === "common"
+                            ? "Shared"
+                            : "Missing context"}
+                      </span>
+                      <p>{pt.text}</p>
+                      <AiCitations citations={pt.citations} passages={leadPassages} />
+                    </li>
+                  ))}
+                </ul>
+                <AiProvenance
+                  model={brief.aiComparison.model}
+                  generatedAt={brief.aiComparison.generatedAt}
+                />
+              </div>
+            )}
           </section>
         )}
         {missingIds.length > 0 && (
@@ -202,6 +249,91 @@ function BriefPage() {
             {brief.question || "No research question set"}
           </h1>
         </header>
+
+        <section aria-label="AI reading of the selected evidence" className="border border-border bg-card p-5">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="max-w-xl">
+              <h2 className="text-lg font-bold tracking-tight">AI reading of the selected evidence</h2>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                An AI model reads one passage from each of the {Math.min(records.length, 12)} saved
+                records shown below{records.length > 12 ? " (the first 12)" : ""} and must quote them
+                for every finding. Findings whose quotes are not found word for word are removed.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={aiBrief.run}
+              disabled={aiBrief.status === "loading" || passages.length === 0}
+              aria-busy={aiBrief.status === "loading"}
+            >
+              <FileSearch aria-hidden="true" className="mr-2 h-4 w-4" />
+              {aiBrief.status === "loading"
+                ? "Reading…"
+                : aiBrief.result
+                  ? "Generate again"
+                  : "Generate AI reading"}
+            </Button>
+          </div>
+          {aiBrief.status === "error" && (
+            <div role="alert" className="mt-4 flex flex-wrap items-center justify-between gap-3 border border-destructive p-3 text-sm">
+              <p>AI reading failed: {aiBrief.error}</p>
+              <Button variant="outline" size="sm" onClick={aiBrief.run}>
+                <RotateCcw aria-hidden="true" className="mr-1.5 h-3.5 w-3.5" />
+                Retry
+              </Button>
+            </div>
+          )}
+          {brief.ai && aiBrief.status !== "loading" && (
+            <div className="mt-5 space-y-6 border-t border-border pt-5">
+              <p className="text-sm leading-relaxed">{brief.ai.overview}</p>
+              {(
+                [
+                  ["Findings", brief.ai.findings],
+                  ["Tensions between sources", brief.ai.tensions],
+                ] as const
+              ).map(([title, items]) =>
+                items.length ? (
+                  <div key={title}>
+                    <h3 className="mb-2 text-sm font-semibold">{title}</h3>
+                    <ul className="space-y-4">
+                      {items.map((f, i) => (
+                        <li key={i} className="text-sm leading-relaxed">
+                          <p>{f.text}</p>
+                          <AiCitations citations={f.citations} passages={passages} label="record" />
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null,
+              )}
+              {(
+                [
+                  ["Gaps in the evidence", brief.ai.gaps],
+                  ["What to verify", brief.ai.verification],
+                  ["Possible angles", brief.ai.angles],
+                ] as const
+              ).map(([title, items]) =>
+                items.length ? (
+                  <div key={title}>
+                    <h3 className="mb-2 text-sm font-semibold">{title}</h3>
+                    <ul className="list-disc space-y-1.5 pl-5 text-sm">
+                      {items.map((x) => (
+                        <li key={x}>{x}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null,
+              )}
+              {brief.ai.droppedPoints > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {brief.ai.droppedPoints} {brief.ai.droppedPoints === 1 ? "finding was" : "findings were"}{" "}
+                  removed because the quoted words were not found in the passages.
+                </p>
+              )}
+              <AiProvenance model={brief.ai.model} generatedAt={brief.ai.generatedAt} />
+            </div>
+          )}
+        </section>
 
         <section>
           <h2 className="mb-3 text-sm font-semibold text-foreground">Source coverage</h2>
