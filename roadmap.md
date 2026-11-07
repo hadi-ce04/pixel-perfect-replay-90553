@@ -1,8 +1,8 @@
 # Parallax roadmap
 
 ## Visual refresh
-- [ ] Brighten the palette and polish editorial page styling without changing research logic.
-- [ ] Verify desktop/mobile visuals and the search-to-evidence workflow.
+- [x] Brighten the palette and polish editorial page styling without changing research logic.
+- [x] Verify desktop/mobile visuals and the search-to-evidence workflow.
 
 ## Completed
 - [x] Graphite-and-orange identity, Manrope typography, and original topic illustrations.
