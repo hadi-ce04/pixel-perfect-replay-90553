@@ -13,6 +13,7 @@ import { useStore } from "@/lib/store";
 import { emptyFilters, type TopicId } from "@/lib/types";
 import { useHydrated } from "@/lib/useHydrated";
 import { formatTime } from "@/lib/format";
+import editorialHousing from "@/assets/editorial-housing.jpg";
 
 const StoryGraph = lazy(() =>
   import("@/components/parallax/StoryGraph").then((m) => ({ default: m.StoryGraph })),
@@ -27,6 +28,7 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "PARALLAX | Look closer. Find the story." },
       { property: "og:description", content: description },
       { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: () => (
@@ -78,17 +80,16 @@ function Landing() {
       </header>
       <main>
         <section className="landing-hero">
+          <img src={editorialHousing} alt="" className="hero-illustration" width={1600} height={1008} fetchPriority="high" />
           <div className="hero-copy">
             <p className="eyebrow flex items-center gap-3">
               <span className="h-1.5 w-1.5 bg-primary" />A new lens on social video
             </p>
-            <h1>
-              Look closer.
-              <br />
-              <span className="hero-muted">Find the</span>
-              <br />
-              <span className="text-primary">story.</span>
-            </h1>
+            <h1>PARALLAX / The research journal</h1>
+            <p className="hero-headline">
+              Look closer.<br />
+              Find the <em>story.</em>
+            </p>
             <p className="hero-description">
               The most interesting story is rarely in one video. Connect the conversations. Follow
               the evidence. Find your angle.
@@ -112,82 +113,7 @@ function Landing() {
               </span>
             </div>
           </div>
-          <div
-            className="hero-stage"
-            aria-label="Illustrated preview of the student housing investigation"
-          >
-            <div className="stage-top">
-              <span>INVESTIGATION 001</span>
-              <span>FR / STUDENT HOUSING</span>
-            </div>
-            <div className="stage-cross stage-cross-a" aria-hidden="true">
-              +
-            </div>
-            <div className="stage-cross stage-cross-b" aria-hidden="true">
-              +
-            </div>
-            <div className="stage-caption">
-              <span className="stage-dot" />
-              One question. Multiple perspectives.
-            </div>
-            <button
-              className="story-poster poster-back"
-              type="button"
-              onClick={() => openRecord("HOU-002")}
-              aria-label="Inspect fictional housing record HOU-002"
-            >
-              <TopicArt topic="employment" className="h-full w-full" />
-              <span className="poster-kicker">THE OTHER SIDE</span>
-              <span className="poster-label">
-                The guarantor
-                <br />
-                barrier.
-              </span>
-            </button>
-            <button
-              className="story-poster poster-front"
-              type="button"
-              onClick={() => openRecord("HOU-001")}
-              aria-label="Inspect fictional housing record HOU-001"
-            >
-              <TopicArt topic="housing" className="h-full w-full" />
-              <span className="poster-kicker">STUDENT HOUSING / 01</span>
-              <span className="poster-label">
-                A room.
-                <br />
-                At what cost?
-              </span>
-              <span className="poster-foot">
-                Illustrated fictional record{" "}
-                <span>{formatTime(RECORDS.find((r) => r.id === "HOU-001")!.durationSeconds)}</span>
-              </span>
-            </button>
-            <div className="stage-tag tag-top">
-              <span className="stage-dot" />
-              Rent burden{" "}
-              <span className="tag-count">
-                {RECORDS.filter((r) => r.themes.includes("rent-burden")).length} records
-              </span>
-            </div>
-            <div className="stage-tag tag-bottom">
-              <span className="connection-glyph" aria-hidden="true">
-                ⌘
-              </span>
-              <div>
-                <strong>Follow the connection</strong>
-                <span>From a personal story to a shared theme.</span>
-              </div>
-            </div>
-            <svg className="stage-connector" viewBox="0 0 600 600" fill="none" aria-hidden="true">
-              <path d="M440 140H525V265H475M90 390H35V510H210" stroke="#ff8a54" strokeWidth="1" />
-              <circle cx="440" cy="140" r="4" fill="#ff8a54" />
-              <circle cx="210" cy="510" r="4" fill="#ff8a54" />
-            </svg>
-            <div className="stage-bottom">
-              <span>ILLUSTRATIONS, NOT SOURCE FOOTAGE</span>
-              <span>01 / 05</span>
-            </div>
-          </div>
+          <span className="hero-art-caption">Editorial illustration · not source footage</span>
         </section>
         <div className="product-strip">
           <span>
@@ -227,20 +153,21 @@ function Landing() {
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
               />
-              <button type="submit" aria-label="Investigate this question">
+              <Button type="submit" size="icon" aria-label="Investigate this question">
                 ↗
-              </button>
+              </Button>
             </form>
             <div className="flex flex-wrap gap-2 pt-4">
               {TOPICS.map((t) => (
-                <button
+                <Button
+                  variant="editorial"
                   type="button"
                   key={t.id}
                   onClick={() => setQuestion(t.question)}
                   className={`topic-pill ${question === t.question ? "is-active" : ""}`}
                 >
                   {t.label}
-                </button>
+                </Button>
               ))}
             </div>
             <p className="mt-4 text-[10px] text-muted-foreground">
@@ -286,7 +213,8 @@ function Landing() {
             </div>
             <div role="tablist" aria-label="Preview topic" className="dna-tabs">
               {TOPICS.map((t) => (
-                <button
+                <Button
+                  variant="editorial"
                   type="button"
                   role="tab"
                   aria-selected={topic === t.id}
@@ -298,7 +226,7 @@ function Landing() {
                   className={topic === t.id ? "is-active" : ""}
                 >
                   {t.label}
-                </button>
+                </Button>
               ))}
             </div>
             <div className="dna-canvas">
@@ -343,9 +271,9 @@ function Landing() {
               Go straight to the passage behind a theme. Inspect the context, collect what matters,
               and keep every reference within reach.
             </p>
-            <button type="button" onClick={() => openRecord(firstRecord.id)} className="ink-button">
+            <Button type="button" onClick={() => openRecord(firstRecord.id)} className="ink-button">
               Inspect a record <span>↗</span>
-            </button>
+            </Button>
             <span className="evidence-disclaimer">Fictional example. No source footage.</span>
           </div>
           <div className="evidence-specimen">
