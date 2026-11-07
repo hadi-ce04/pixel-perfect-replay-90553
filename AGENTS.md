@@ -14,4 +14,4 @@
 - Search/filtering (src/lib/search.ts), graph relationships (src/lib/graph.ts) and brief generation (src/lib/brief.ts) stay in separate pure modules so they can be unit-tested.
 - Client state (query, filters, saved evidence, recent searches) lives in `StoreProvider` and persists to localStorage; no backend in this version.
 - Presentation is shared through semantic CSS tokens and the Button component; editorial layouts must not change provider, search, graph relationship, store or brief logic.
-- Cover imagery is bundled locally and explicitly labeled as editorial illustration, never source footage; global semantic tokens control the light presentation across screens.
+- Darkroom identity: warm ink background, one safelight accent (`--primary`), developer-amber evidence marks (`--insight`), Archivo condensed headlines and IBM Plex Mono metadata, all via semantic tokens in src/styles.css. Landing illustrations are labeled fictional, never source footage.

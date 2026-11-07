@@ -151,6 +151,9 @@ goes going gone make makes making made see seeing seen look looking let lets use
 coming take taking give giving put react reacts reacting reacted respond responding really actually basically literally like likes liked gonna wanna
 yeah yes okay ok oh hey hi hello thing things stuff lot lots kind sort way ways much many well right
 something anything everything nothing someone anyone everyone people person guys guy one two
+because cause time times better best good great bad worse worst new old big little back next last first
+maybe probably sure true real really pretty whole every ago around enough else instead though although
+day days week weeks thank thanks please watch follow comment share video videos
 le la les l un une des du de d au aux ce cet cette ces c ca cela ceci celui celle ceux celles
 et ou mais donc or ni car si que qu qui quoi dont ou comment pourquoi quand quel quelle quels quelles
 combien est sont etait etaient etre ete suis es sommes etes ai as avons avez ont avait avaient avoir

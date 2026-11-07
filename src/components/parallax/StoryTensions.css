@@ -64,7 +64,7 @@
   font-size: 11px;
   color: var(--foreground);
   background: var(--card);
-  color-scheme: light;
+  color-scheme: dark;
   cursor: pointer;
   text-overflow: ellipsis;
 }

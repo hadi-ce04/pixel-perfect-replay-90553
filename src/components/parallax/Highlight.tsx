@@ -11,7 +11,7 @@ export function Highlight({ text, terms }: { text: string; terms: readonly strin
   matches.forEach((m, i) => {
     if (m.start > at) parts.push(<Fragment key={`t${i}`}>{text.slice(at, m.start)}</Fragment>);
     parts.push(
-      <mark key={`m${i}`} className="rounded-[2px] bg-primary/25 px-0.5 text-foreground">
+      <mark key={`m${i}`} className="px-0.5">
         {text.slice(m.start, m.end)}
       </mark>,
     );

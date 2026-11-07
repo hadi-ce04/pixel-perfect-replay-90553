@@ -13,7 +13,6 @@ import { useStore } from "@/lib/store";
 import { emptyFilters, type TopicId } from "@/lib/types";
 import { useHydrated } from "@/lib/useHydrated";
 import { formatTime } from "@/lib/format";
-import editorialHousing from "@/assets/editorial-housing.jpg";
 
 const StoryGraph = lazy(() =>
   import("@/components/parallax/StoryGraph").then((m) => ({ default: m.StoryGraph })),
@@ -80,40 +79,36 @@ function Landing() {
       </header>
       <main>
         <section className="landing-hero">
-          <img src={editorialHousing} alt="" className="hero-illustration" width={1600} height={1008} fetchPriority="high" />
           <div className="hero-copy">
             <p className="eyebrow flex items-center gap-3">
-              <span className="h-1.5 w-1.5 bg-primary" />A new lens on social video
+              <span className="h-1.5 w-1.5 bg-primary" />A research desk for social video
             </p>
-            <h1>PARALLAX / The research journal</h1>
+            <h1>PARALLAX / Evidence, developed</h1>
             <p className="hero-headline">
-              Look closer.<br />
+              Look closer.
+              <br />
               Find the <em>story.</em>
             </p>
             <p className="hero-description">
-              The most interesting story is rarely in one video. Connect the conversations. Follow
-              the evidence. Find your angle.
+              The story is rarely in one video. Search what people say on camera, keep the exact
+              words and timestamps, and put two accounts side by side.
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-5">
-              <Button asChild size="lg" className="h-12 rounded-full px-7 font-bold">
+            <div className="mt-9 flex flex-wrap items-center gap-6">
+              <Button asChild size="lg" className="h-12 px-7 font-bold">
                 <Link to="/app">
                   Start investigating <span aria-hidden="true">↗</span>
                 </Link>
               </Button>
-              <a href="#story-dna" className="text-xs font-semibold underline underline-offset-4">
-                Explore Story DNA
+              <a href="#story-dna" className="hero-link">
+                See Story DNA
               </a>
             </div>
             <div className="hero-demo">
               <DemoBadge />
-              <span>
-                Explore 45 fictional video records.
-                <br />
-                Live retrieval comes later.
-              </span>
+              <span>Examples on this page are fictional. The workspace searches real sources.</span>
             </div>
           </div>
-          <span className="hero-art-caption">Editorial illustration · not source footage</span>
+          <ContactSheet />
         </section>
         <div className="product-strip">
           <span>
@@ -350,9 +345,9 @@ function Landing() {
           Connected evidence.
         </p>
         <span>
-          Prototype / All records are fictional.
+          Examples on this page are fictional.
           <br />
-          No live retrieval is connected.
+          The workspace connects to live sources.
         </span>
         <Link to="/app" className="text-xs font-semibold">
           Open workspace ↗
@@ -360,5 +355,48 @@ function Landing() {
       </footer>
       <EvidencePanel />
     </div>
+  );
+}
+
+/** Landing-only contact sheet built from fictional demo records: two frames marked as a pair. */
+const SHEET_IDS = ["HOU-001", "GRO-002", "HOU-002", "TRA-001", "EMP-003", "CLI-002", "HOU-008", "GRO-004", "TRA-005", "EMP-001", "CLI-004", "HOU-006"];
+const PAIR = ["HOU-002", "HOU-008"];
+
+function ContactSheet() {
+  const frames = SHEET_IDS.map((id) => RECORDS.find((r) => r.id === id)).filter(
+    (r): r is (typeof RECORDS)[number] => !!r,
+  );
+  return (
+    <figure className="contact-sheet" aria-label="Illustrated contact sheet of fictional records">
+      <div className="sheet-rail" aria-hidden="true" />
+      <div className="sheet-grid">
+        {frames.map((r, i) => {
+          const mark = PAIR.indexOf(r.id);
+          const ev = r.evidence[0];
+          return (
+            <div key={r.id} className={`sheet-frame ${mark >= 0 ? "is-marked" : ""}`}>
+              <div className="sheet-print">
+                <TopicArt topic={r.topic === "unclassified" ? "housing" : r.topic} className="h-full w-full" />
+              </div>
+              <span className="sheet-num">{String(i + 1).padStart(2, "0")}A</span>
+              <span className="sheet-time">{formatTime(ev?.startSeconds ?? null)}</span>
+              {mark >= 0 && (
+                <>
+                  <svg className="sheet-circle" viewBox="0 0 120 100" aria-hidden="true">
+                    <path d="M62 6C30 4 6 22 7 50c1 27 26 44 57 43 31-1 51-21 50-46C113 22 92 5 58 9" />
+                  </svg>
+                  <span className="sheet-letter">{mark === 0 ? "A" : "B"}</span>
+                </>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <div className="sheet-rail" aria-hidden="true" />
+      <figcaption>
+        <span className="text-primary">A ↔ B</span> Same theme, two accounts. That's a Story Tension.
+        <em>Illustration · fictional records</em>
+      </figcaption>
+    </figure>
   );
 }
