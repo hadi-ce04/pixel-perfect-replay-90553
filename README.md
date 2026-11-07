@@ -6,6 +6,16 @@ This project was built with [Lovable](https://lovable.dev).
 
 ## Build with Lovable
 
+
+
+
+LINK : https://pixel-perfect-replay-90553.lovable.app/app
+
+
+
+
+
+
 Continue developing this project in the [Lovable editor](https://lovable.dev/projects/3cf646b5-78f6-4d1e-99f4-53d0a467148c).
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
